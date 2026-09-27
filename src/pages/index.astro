@@ -4,13 +4,14 @@ import Header from '../components/Header.astro';
 import CinematicPhoto from '../components/CinematicPhoto.astro';
 import HeroTitle from '../components/HeroTitle.astro';
 import Scrap from '../components/Scrap.astro';
-import { work, heroes, family, checks, warmup, matching, plural } from '../data/ionych.js';
+import { work, heroes, family, checks, plural } from '../data/ionych.js';
+import { warmup, matching, terms } from '../data/zadaniya.js';
 import { to, asset } from '../scripts/paths.js';
 
 const heroCount = heroes.length + 1;
 const questionCount = Object.values(checks).reduce((n, list) => n + list.length, 0) + 1;
-// Столько заданий действительно лежит в тест-дыре: разминка плюс сопоставление.
-const taskCount = warmup.length + matching.length;
+// Столько заданий действительно лежит в тест-дыре: задания № 1, № 2 и № 3.
+const taskCount = warmup.length + matching.length + terms.length;
 
 const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, anchor: h.id }))];
 ---

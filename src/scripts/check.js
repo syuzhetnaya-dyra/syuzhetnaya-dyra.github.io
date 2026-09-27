@@ -168,7 +168,7 @@ function mountRun(root) {
     const left = ORDER.filter((id) => !new Set(readDone()).has(id));
 
     if (!left.length) {
-      note.innerHTML = `Все герои закрыты. <a class="done__link" href="${to('ionych/dyra/')}">Открыть тест-дыру № 2</a>`;
+      note.innerHTML = `Все герои закрыты. <a class="done__link" href="${to('ionych/dyra/')}">Открыть тест-дыру</a>`;
     } else {
       const nextId = left[0];
       note.innerHTML = `Дальше по порядку — <a class="done__link" href="${to(`ionych/check/?hero=${nextId}`)}">${NAMES[nextId]}</a>`;

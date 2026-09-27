@@ -2,28 +2,37 @@
 import Shell from '../../layouts/Shell.astro';
 import Header from '../../components/Header.astro';
 import NextWork from '../../components/NextWork.astro';
-import { warmup, matching, taskFormat } from '../../data/ionych.js';
+import { warmup, matching, terms, taskFormat } from '../../data/zadaniya.js';
 import { to } from '../../scripts/paths.js';
 
-const task = matching[0];
+/*
+ * Все задания сопоставления и все термины кладутся в разметку сразу, а
+ * показывается по одному. Так у страницы без JS остаётся рабочее первое
+ * задание, а у страницы с JS — колода: «другое задание» не идёт на сервер и
+ * ничего не перерисовывает, просто открывает следующую карточку.
+ *
+ * Строить эту разметку в JS было бы экономнее по узлам, но тогда один и тот
+ * же бланк существовал бы в двух местах — здесь и в скрипте, — и расходился
+ * бы при первой же правке.
+ */
 ---
 
-<Shell title="Тест-дыра № 2 · Ионыч" screen="dyra">
+<Shell title="Тест-дыра · Ионыч" screen="dyra">
   <Header active="dyra" />
 
   <main class="exam">
     <header class="ds-head">
-      <h1 class="sp-h1">Тест-дыра № 2</h1>
+      <h1 class="sp-h1">Тест-дыра</h1>
       <p class="sp-lead" data-hint></p>
     </header>
 
     <section class="warm" aria-labelledby="h-warm">
       <header class="warm__head">
-        <h2 class="sp-h2" id="h-warm">Разминка</h2>
+        <h2 class="sp-h2" id="h-warm">Задание № 1</h2>
         <button class="warm__skip" type="button">Пропустить</button>
       </header>
       <p class="sp-sub">
-        Три коротких ответа с клавиатуры. Регистр и окончания не придираются.
+        Род, жанр, направление. Ответы с клавиатуры; регистр и окончания не придираются.
       </p>
 
       <p class="warm__count" data-warm-count aria-live="polite">Отвечено 0 из {warmup.length}</p>
@@ -32,7 +41,8 @@ const task = matching[0];
         {
           warmup.map((w) => (
             <li class="warm__row" data-answers={w.answers.join('|')}>
-              <label class="warm__label" for={`w-${w.id}`}>
+              <p class="warm__label">{w.kind}</p>
+              <label class="warm__ask" for={`w-${w.id}`}>
                 {w.ask}
               </label>
               <input
@@ -52,102 +62,165 @@ const task = matching[0];
       <button class="warm__check" type="button">Проверить</button>
     </section>
 
-    <section class="match" aria-labelledby="h-match" data-answer={JSON.stringify(task.answer)}>
-      <h2 class="sp-h2" id="h-match">Сопоставление</h2>
-      <p class="match__kind">{task.kind}</p>
-      <p class="match__prompt">{task.prompt}</p>
+    <div class="pool" data-match-pool>
+      <header class="pool__head">
+        <h2 class="sp-h2" id="h-match">Задание № 2</h2>
+        <p class="pool__count" data-match-pool-count aria-live="polite"></p>
+      </header>
+      <p class="sp-sub">
+        Сопоставление. Один вариант всегда лишний — он принадлежит тому, кого
+        в левом столбце нет. Заданий {matching.length}, порядок каждый раз новый.
+      </p>
 
-      <div class="match__col" aria-label="Позиции">
-        <p class="match__bank-h">Позиции</p>
-        <ol class="match__left">
-          {
-            task.left.map((l) => (
-              <li>
-                <button class="slot" type="button" data-key={l.key} aria-expanded="false">
-                  <span class="slot__key">{l.key}</span>
-                  <span class="slot__label">{l.label}</span>
-                  <span class="slot__pick" data-pick>выбрать</span>
-                </button>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
+      {
+        matching.map((task, i) => (
+          <section
+            class="match"
+            aria-labelledby="h-match"
+            data-match={task.id}
+            data-answer={JSON.stringify(task.answer)}
+            data-extra={task.extra}
+            hidden={i > 0}
+          >
+            <p class="match__kind">{task.kind}</p>
+            <p class="match__prompt">{task.prompt}</p>
 
-      <div class="match__bank" aria-label="Варианты">
-        <p class="match__bank-h">Варианты</p>
-        <ul class="match__options">
-          {
-            task.right.map((r) => (
-              <li>
-                <button class="bank" type="button" data-key={r.key}>
-                  <span class="bank__key">{r.key}</span>
-                  <span class="bank__label">{r.label}</span>
-                </button>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
+            <div class="match__col" aria-label="Позиции">
+              <p class="match__bank-h">Позиции</p>
+              <ol class="match__left">
+                {task.left.map((l) => (
+                  <li>
+                    <button
+                      class="slot"
+                      type="button"
+                      data-key={l.key}
+                      data-hero={l.hero}
+                      data-why={task.why[l.key]}
+                      aria-expanded="false"
+                    >
+                      <span class="slot__key">{l.key}</span>
+                      <span class="slot__label">{l.label}</span>
+                      <span class="slot__pick" data-pick>
+                        выбрать
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </div>
 
-      {/* Бланк, а не строка «Ответ: — — —»: клетки по числу позиций, над
-          каждой её буква. Число клеток берётся из задания, не задано руками —
-          формат ещё будет сверяться с демоверсией. */}
-      <div class="blank">
-        <p class="blank__lead">{taskFormat.answerLead}</p>
-        <ol class="blank__cells">
-          {
-            task.left.map((l) => (
-              <li class="blank__cell">
-                <span class="blank__key">{l.key}</span>
-                <span class="blank__digit" data-blank={l.key}>
-                  —
-                </span>
-              </li>
-            ))
-          }
-        </ol>
-        <p class="blank__note">{taskFormat.answerNote}</p>
-        <p class="blank__count" data-match-count aria-live="polite">
-          Заполнено 0 из {task.left.length}
-        </p>
-      </div>
+            <div class="match__bank" aria-label="Варианты">
+              <p class="match__bank-h">Варианты</p>
+              <ul class="match__options">
+                {task.right.map((r) => (
+                  <li>
+                    <button class="bank" type="button" data-key={r.key}>
+                      <span class="bank__key">{r.key}</span>
+                      <span class="bank__label">{r.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-      <button class="match__check" type="button" disabled>Проверить</button>
+            {/* Бланк, а не строка «Ответ: — — —»: клетки по числу позиций, над
+                каждой её буква. Число клеток берётся из задания, не задано руками —
+                формат ещё будет сверяться с демоверсией. */}
+            <div class="blank">
+              <p class="blank__lead">{taskFormat.answerLead}</p>
+              <ol class="blank__cells">
+                {task.left.map((l) => (
+                  <li class="blank__cell">
+                    <span class="blank__key">{l.key}</span>
+                    <span class="blank__digit" data-blank={l.key}>
+                      —
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p class="blank__note">{taskFormat.answerNote}</p>
+              <p class="blank__count" data-match-count aria-live="polite">
+                Заполнено 0 из {task.left.length}
+              </p>
+            </div>
 
-      <div class="match__verdict" hidden>
-        <p class="verdict__head"><span class="verdict__word" /></p>
-        <ul class="match__rows" data-rows />
-        <div class="match__extra">
-          <p class="match__extra-lead">Лишний вариант</p>
-          <p class="match__extra-text" data-extra-text />
-          <p class="match__extra-why">{task.extraWhy}</p>
-          {
-            task.extraHero && (
-              <a class="hero-link" href={to(`ionych/dosye/${task.extraHero}/`)}>
-                <span class="hero-link__t">Посмотреть героя в досье</span>
-                <span aria-hidden="true">→</span>
-              </a>
-            )
-          }
-        </div>
-        <button class="match__again" type="button">Пройти заново</button>
+            <button class="match__check" type="button" disabled>Проверить</button>
 
-        {/* Момент наибольшей заинтересованности: человек только что дошёл
-            до конца «Ионыча». Здесь и спрашиваем, что дальше. */}
-        <NextWork heading="«Ионыч» пройден. Что разобрать следующим?" />
-      </div>
+            <div class="match__verdict" hidden>
+              <p class="verdict__head"><span class="verdict__word" /></p>
+              <ul class="match__rows" data-rows />
+              <div class="match__extra">
+                <p class="match__extra-lead">Лишний вариант</p>
+                <p class="match__extra-text" data-extra-text />
+                <p class="match__extra-why">{task.extraWhy}</p>
+                {task.extraHero && (
+                  <a class="hero-link" href={to(`ionych/dosye/${task.extraHero}/`)} data-extra-link>
+                    <span class="hero-link__t">Посмотреть героя в досье</span>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                )}
+              </div>
+              <div class="match__after">
+                <button class="match__again" type="button" data-match-next>Другое задание</button>
+                <button class="match__retry" type="button">Пройти это заново</button>
+              </div>
+            </div>
+          </section>
+        ))
+      }
+    </div>
+
+    {/*
+      Задание № 3. В настоящем задании пропусков два, здесь по одному:
+      термин отрабатывается по одному, а не угадывается парой. Разметка
+      повторяет разминку намеренно — это тот же жест «впиши слово», и
+      выдумывать для него второй внешний вид незачем.
+    */}
+    <section class="warm warm--terms" aria-labelledby="h-terms" data-terms>
+      <header class="warm__head">
+        <h2 class="sp-h2" id="h-terms">Задание № 3</h2>
+        <button class="warm__skip" type="button" data-term-next>Другой термин</button>
+      </header>
+      <p class="sp-sub">
+        Литературоведческий термин по фрагменту. Вопросов {terms.length}, показывается
+        по одному.
+      </p>
+
+      <p class="warm__count" data-term-count aria-live="polite"></p>
+
+      <ol class="warm__list">
+        {
+          terms.map((t, i) => (
+            <li class="warm__row warm__row--term" data-term={t.id} data-answers={t.answers.join('|')} hidden={i > 0}>
+              <label class="warm__ask warm__ask--long" for={`t-${t.id}`}>
+                {t.ask}
+              </label>
+              <input
+                class="warm__input"
+                id={`t-${t.id}`}
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                enterkeyhint="done"
+              />
+              <span class="warm__verdict" aria-live="polite" />
+              <p class="warm__why" hidden>{t.why}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <button class="warm__check" type="button" data-term-check>Проверить</button>
+
+      {/* Момент наибольшей заинтересованности: человек только что дошёл
+          до конца «Ионыча». Здесь и спрашиваем, что дальше. */}
+      <NextWork heading="«Ионыч» пройден. Что разобрать следующим?" />
     </section>
   </main>
-
-  <script define:vars={{ taskData: task }} is:inline>
-    window.__TASK__ = taskData;
-  </script>
 
   <script>
     import { mountDyra } from '../../scripts/dyra.js';
     import { mountNextWork } from '../../scripts/next-work.js';
-    
+
     document.addEventListener('astro:page-load', () => {
       mountDyra();
       mountNextWork();

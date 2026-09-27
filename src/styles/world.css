@@ -3955,3 +3955,105 @@ body:not([data-screen='title']) .hdr {
     transition: none;
   }
 }
+
+/* ─── Тест-дыра: вопрос, колода заданий, термины ─── */
+
+/*
+ * Вопрос задания — это текст, который читают, а не подпись к полю формы.
+ * Подпись (.warm__label) осталась золотым микрошрифтом с номером и говорит,
+ * что спрашивают; сам вопрос набран как проза.
+ */
+.warm__ask {
+  display: block;
+  max-width: 58ch;
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Формулировка задания № 3 — абзац на три строки: она несёт пример из текста,
+   и ужимать её нельзя, иначе пропадёт то, по чему термин и опознают. */
+.warm__ask--long {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/*
+ * Колода заданий № 2. В разметке лежат все, открыто одно — поэтому заголовок
+ * и счётчик вынесены наружу: они относятся к колоде, а не к карточке, и не
+ * должны исчезать вместе с ней.
+ */
+.pool {
+  margin-top: 46px;
+}
+
+.pool__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pool__count {
+  margin: 0;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/*
+ * Две кнопки после разбора. «Другое задание» — основной путь и выглядит как
+ * основной; «пройти это заново» нужен редко, поэтому он текстом, а не второй
+ * такой же плашкой: две одинаковые кнопки заставляют выбирать там, где выбора
+ * по сути нет.
+ */
+.match__after {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.match__retry {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--hair);
+  text-underline-offset: 5px;
+  transition: color 160ms ease-out, text-decoration-color 160ms ease-out;
+}
+
+.match__retry:hover {
+  color: var(--wine);
+  text-decoration-color: var(--wine);
+}
+
+.warm--terms {
+  margin-top: 46px;
+}
+
+/* В терминах показан один вопрос из десяти, и номер строки сбил бы с толку:
+   «1.» стояло бы у любого. Счётчик колоды выше говорит правду. */
+.warm--terms .warm__label::before {
+  content: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match__retry {
+    transition: none;
+  }
+}

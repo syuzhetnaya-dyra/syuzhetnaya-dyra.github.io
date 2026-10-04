@@ -37,6 +37,7 @@ const RABOTY = [
 
 function pochistit(syroy) {
   let t = syroy.replace(/\r\n/g, '\n');
+  t = t.replace(/<!--[\s\S]*?-->/g, '');
   t = t.replace(/<ref[^>]*>[\s\S]*?<\/ref>/g, '').replace(/<ref[^>]*\/>/g, '');
   // {{lang|fr|pince-nez}} — внутри шаблона лежит слово из самого текста.
   // Выбросить шаблон целиком значит выбросить слово.

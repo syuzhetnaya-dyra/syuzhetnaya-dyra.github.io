@@ -14,7 +14,9 @@ import { to } from './paths.js';
 import { goal } from './metrika.js';
 import { revealNextWork } from './next-work.js';
 
-const ORDER = ['ivan', 'vera', 'kotik', 'starcev', 'sluga', 'final'];
+// Произведение знает тело страницы; состав героев — страница чека. Здесь
+// нужно только, сколько их закрыто, поэтому список приходит из прогресса.
+const WORK = () => document.body.dataset.work || 'ionych';
 
 // Проверка не придирается к регистру, ё и окончаниям: «эпосъ», «Эпос»,
 // «эпическ» — всё это один и тот же ответ ученика, который помнит суть.
@@ -65,13 +67,14 @@ function taskDone() {
 function mountHint() {
   const hint = document.querySelector('[data-hint]');
   if (!hint) return;
-  const done = new Set(readDone());
-  const left = ORDER.filter((id) => !done.has(id));
-  if (!left.length) {
+  const done = readDone(WORK());
+  const vsego = Number(document.body.dataset.heroes || 0);
+  const left = Math.max(0, vsego - done.length);
+  if (vsego && !left) {
     hint.textContent = 'Все герои в сюжетном чеке закрыты — можно проверять себя начисто.';
     hint.dataset.state = 'ready';
   } else {
-    hint.innerHTML = `Сюжетный чек пройден не весь: осталось ${left.length} из ${ORDER.length}. Это не запрещает тест — но ловушки здесь рассчитаны на то, что досье уже разобрано. <a class="done__link" href="${to('ionych/check/')}">Вернуться к чеку</a>`;
+    hint.innerHTML = `Сюжетный чек пройден не весь: осталось ${left} из ${vsego}. Это не запрещает тест — но ловушки здесь рассчитаны на то, что досье уже разобрано. <a class="done__link" href="${to(`${WORK()}/check/`)}">Вернуться к чеку</a>`;
     hint.dataset.state = 'partial';
   }
 }
@@ -292,7 +295,7 @@ function mountMatching(root, onNext) {
       // идёшь читать Веру Иосифовну, а не искать её по колоде заново.
       const hero = s.dataset.hero;
       const toHero = hero
-        ? `<a class="hero-link" href="${to(`ionych/dosye/${hero}/`)}"><span class="hero-link__t">Посмотреть героя в досье</span><span aria-hidden="true">→</span></a>`
+        ? `<a class="hero-link" href="${to(`${WORK()}/dosye/${hero}/`)}"><span class="hero-link__t">Посмотреть героя в досье</span><span aria-hidden="true">→</span></a>`
         : '';
       li.innerHTML = `
         <p class="match__row-head"><b>${key}</b> ${label} — ${ok ? 'верно' : 'неверно'}</p>

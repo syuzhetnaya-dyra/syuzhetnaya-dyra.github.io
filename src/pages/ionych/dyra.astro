@@ -3,6 +3,7 @@ import Shell from '../../layouts/Shell.astro';
 import Header from '../../components/Header.astro';
 import NextWork from '../../components/NextWork.astro';
 import { warmup, matching, terms, taskFormat } from '../../data/zadaniya.js';
+import { checkOrder } from '../../data/ionych.js';
 import { to } from '../../scripts/paths.js';
 
 /*
@@ -17,8 +18,8 @@ import { to } from '../../scripts/paths.js';
  */
 ---
 
-<Shell title="Тест-дыра · Ионыч" screen="dyra">
-  <Header active="dyra" />
+<Shell title="Тест-дыра · Ионыч" screen="dyra" work="ionych" heroes={checkOrder.length + 1}>
+  <Header work="ionych" active="dyra" />
 
   <main class="exam">
     <header class="ds-head">

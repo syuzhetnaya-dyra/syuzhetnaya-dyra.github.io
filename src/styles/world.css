@@ -4057,3 +4057,210 @@ body:not([data-screen='title']) .hdr {
     transition: none;
   }
 }
+
+/* ─── Выбор произведения ─── */
+
+/*
+ * Главная больше не титульная «Ионыча», а опись: что разобрано и что будет.
+ * Поэтому здесь нет фотографии во весь экран и нет лепестков — опись не
+ * должна выглядеть торжественнее того, к чему ведёт.
+ */
+.works {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 16px 72px;
+}
+
+.works__head {
+  padding: 26px 0 30px;
+  border-bottom: 1px solid var(--gold);
+}
+
+.works__h {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: clamp(2.1rem, 9vw, 3.4rem);
+  line-height: 1.04;
+  color: var(--wine-deep);
+}
+
+.works__lead {
+  margin: 0;
+  max-width: 52ch;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1rem, 3.6vw, 1.1875rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.works__band {
+  margin-top: 38px;
+}
+
+.works__band-h {
+  margin: 0 0 4px;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.works__note {
+  margin: 0 0 18px;
+  max-width: 46ch;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.works__band-h + .works__grid {
+  margin-top: 18px;
+}
+
+.works__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 620px) {
+  .works__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 980px) {
+  .works__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/*
+ * Карточка произведения — лист, подшитый к делу: бумага, золотой волосок
+ * сверху, никакой тени и никакого скругления. Заливка наезжает слева, как
+ * у кнопок и строк голосования, — один и тот же жест во всём продукте.
+ */
+.wcard {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  min-height: 164px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--hair);
+  border-top: 2px solid var(--gold);
+  text-decoration: none;
+
+  background-color: var(--paper);
+  background-image: linear-gradient(
+    to right,
+    rgba(176, 141, 79, 0.16) 0 40%,
+    rgba(176, 141, 79, 0) 50%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  transition: background-position 420ms cubic-bezier(0.2, 0.74, 0.22, 1);
+}
+
+@media (hover: hover) {
+  .wcard:not(.wcard--soon):hover {
+    background-position: 0 0;
+  }
+}
+
+.wcard__author {
+  font-family: var(--micro);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.wcard__title {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  line-height: 1.12;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.wcard__meta {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+.wcard__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.wcard__count,
+.wcard__soon,
+.wcard__ratio {
+  font-family: var(--micro);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.wcard__soon {
+  color: var(--gold-text);
+}
+
+/* Произведение, которого ещё нет, не притворяется ссылкой: ни курсора,
+   ни наезда заливки. Видно, что оно будет, и видно, что его пока нет. */
+.wcard--soon {
+  background-image: none;
+  border-top-color: var(--hair);
+  cursor: default;
+}
+
+.wcard--soon .wcard__title,
+.wcard--soon .wcard__author,
+.wcard--soon .wcard__meta {
+  opacity: 0.62;
+}
+
+.wcard__prog {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wcard__bar {
+  display: block;
+  width: 56px;
+  height: 2px;
+  background: var(--hair);
+}
+
+.wcard__bar::before {
+  content: '';
+  display: block;
+  height: 100%;
+  width: calc(var(--dolya, 0) * 100%);
+  background: var(--wine);
+}
+
+.wcard[data-started='done'] .wcard__bar::before {
+  background: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wcard {
+    transition: none;
+  }
+}

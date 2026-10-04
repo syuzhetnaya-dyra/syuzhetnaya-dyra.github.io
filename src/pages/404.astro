@@ -1,31 +1,31 @@
 ---
 import Shell from '../layouts/Shell.astro';
 import Header from '../components/Header.astro';
-import { sections } from '../data/ionych.js';
+import { published } from '../data/works.js';
 import { to } from '../scripts/paths.js';
 
-// active задан нарочно несуществующим разделом: ни один пункт навигации не
-// помечается активным, а в левом углу встаёт «Главная», а не знак.
+// Со страницы ошибки ведём не в разделы одного произведения, а ко всем
+// открытым: человек мог прийти по ссылке на то, чего ещё нет.
 ---
 
 <Shell title="Страница не найдена" screen="notfound">
-  <Header active="—" />
+  <Header />
 
   <main class="nf">
     <p class="nf__code" aria-hidden="true">404</p>
     <h1 class="nf__h">Здесь дыра</h1>
     <p class="nf__lead">
       Страницы по этому адресу нет. Обычно это устаревшая ссылка или опечатка
-      в адресе — сам разбор «Ионыча» на месте, он ниже.
+      в адресе. Вот что открыто сейчас.
     </p>
 
     <ul class="nf__list">
       {
-        sections.map((s) => (
+        published.map((w, i) => (
           <li>
-            <a class="nf__row" href={to(s.href)}>
-              <span class="nf__num">{s.num}</span>
-              <span class="nf__name">{s.name}</span>
+            <a class="nf__row" href={to(`${w.slug}/`)}>
+              <span class="nf__num">{w.author.split(' ').pop()}</span>
+              <span class="nf__name">{w.title}</span>
               <span class="nf__arrow" aria-hidden="true">
                 →
               </span>

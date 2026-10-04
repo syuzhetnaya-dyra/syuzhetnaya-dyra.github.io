@@ -1,117 +1,106 @@
 ---
+/*
+ * Выбор произведения.
+ *
+ * Открытые произведения идут первыми и ведут на свою титульную. Остальные
+ * показаны честно: видно, что они будут, и видно, что их ещё нет. Прятать
+ * их целиком нельзя — ученик должен понимать, ради чего возвращаться; но и
+ * выдавать за готовые нельзя тем более.
+ *
+ * Прогресс подставляет скрипт после загрузки: он лежит в браузере, а
+ * страница собирается заранее и одинакова для всех.
+ */
 import Shell from '../layouts/Shell.astro';
 import Header from '../components/Header.astro';
-import CinematicPhoto from '../components/CinematicPhoto.astro';
-import HeroTitle from '../components/HeroTitle.astro';
-import Scrap from '../components/Scrap.astro';
-import { work, heroes, family, checks, plural } from '../data/ionych.js';
-import { warmup, matching, terms } from '../data/zadaniya.js';
-import { to, asset } from '../scripts/paths.js';
+import { works } from '../data/works.js';
+import { to } from '../scripts/paths.js';
 
-const heroCount = heroes.length + 1;
-const questionCount = Object.values(checks).reduce((n, list) => n + list.length, 0) + 1;
-// Столько заданий действительно лежит в тест-дыре: задания № 1, № 2 и № 3.
-const taskCount = warmup.length + matching.length + terms.length;
+const otkryty = works.filter((w) => w.status === 'published');
+const skoro = works.filter((w) => w.status !== 'published');
 
-const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, anchor: h.id }))];
+// Волны — наш внутренний порядок работы, ученику он ни о чём не говорит.
+// Ему говорит другое: что идёт следующим. Поэтому «скоро» сортируем по
+// волне, но подписываем словами, а не номерами.
+const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeCompare(b.title, 'ru'));
 ---
 
-<Shell title={work.title} screen="title">
+<Shell
+  title="Сюжетная дыра"
+  description="Тренажёр заданий №1–3 ЕГЭ по литературе: досье героев, сюжетный чек и тест-дыра по произведениям кодификатора."
+  screen="works"
+>
   <Header />
 
-  <CinematicPhoto
-    src={asset('hero/ionych-1680.jpg')}
-    srcNarrow={asset('hero/ionych-900.jpg')}
-    alt=""
-    position="center 42%"
-  >
-    <div class="hero">
-      <HeroTitle text={work.title} />
+  <main class="works">
+    <header class="works__head">
+      <h1 class="works__h">Сюжетная дыра</h1>
+      <p class="works__lead">
+        Тренажёр первых заданий ЕГЭ по литературе. Досье героев с цитатами —
+        глава, говорящий и разбор; чек по сюжету; типовые задания.
+      </p>
+    </header>
 
-      <div class="hero__act">
-        <a class="hero__cta" href={to('ionych/dosye/')} data-petal-link>
-          Начать тренировку
-          <span class="hero__cta-arrow" aria-hidden="true">→</span>
-        </a>
-        <p class="hero__meta">
-          {heroCount} досье · {questionCount}{' '}
-          {plural(questionCount, 'вопрос', 'вопроса', 'вопросов')} · {taskCount}{' '}
-          {plural(taskCount, 'типовое задание', 'типовых задания', 'типовых заданий')}
-        </p>
-      </div>
+    <section class="works__band" aria-labelledby="h-open">
+      <h2 class="works__band-h" id="h-open">Открыто</h2>
 
-    </div>
-  </CinematicPhoto>
-
-  <section class="why" aria-labelledby="why-h">
-    <h2 class="why__h" id="why-h">Зачем это</h2>
-    <div class="why__scraps">
-      <Scrap side="left" seed={7} tilt="-1.6deg">
-        <p class="scrap__label">Что мы делаем</p>
-        <p class="scrap__text">
-          Делаем литературу живой: герои и детали, которые обычно остаются
-          за кадром, но встречаются в ЕГЭ.
-        </p>
-      </Scrap>
-
-      <Scrap side="right" seed={23} tilt="1.4deg">
-        <p class="scrap__label">Задание №2</p>
-        <p class="scrap__text">
-          Цитаты, которые закрывают задание №2 ЕГЭ по литературе — с главой,
-          говорящим и разбором, почему верна именно эта.
-        </p>
-      </Scrap>
-    </div>
-  </section>
-
-  <section class="cast" aria-labelledby="cast-h">
-    <h2 class="cast__h" id="cast-h">Действующие лица</h2>
-
-    {/* Лента едет, пока её не трогают: наведение, фокус с клавиатуры и палец
-        на экране её останавливают — иначе имя уезжает из-под пальца.
-        Второй проход ленты — копия для бесшовной петли, от чтения с экрана
-        и от Tab она скрыта. При prefers-reduced-motion лента стоит и
-        листается пальцем. */}
-    <div class="cast__lane">
-      <ul class="cast__track">
+      <ul class="works__grid">
         {
-          cast.map((c) => (
+          otkryty.map((w) => (
             <li>
-              <a class="cast__item" href={to(`ionych/dosye/#${c.anchor}`)}>
-                <span class="cast__name">{c.name}</span>
-                <span class="cast__role">{c.aka ? `«${c.aka}»` : c.role}</span>
-              </a>
-            </li>
-          ))
-        }
-        {
-          cast.map((c) => (
-            <li aria-hidden="true">
-              <a class="cast__item" href={to(`ionych/dosye/#${c.anchor}`)} tabindex="-1">
-                <span class="cast__name">{c.name}</span>
-                <span class="cast__role">{c.aka ? `«${c.aka}»` : c.role}</span>
+              <a class="wcard" href={to(`${w.slug}/`)} data-work-card={w.slug} data-work-total={w.cards} data-petal-link>
+                <span class="wcard__author">{w.author}</span>
+                <span class="wcard__title">{w.title}</span>
+                <span class="wcard__meta">
+                  {w.genre} · {w.year}
+                </span>
+                <span class="wcard__foot">
+                  <span class="wcard__count">{w.cards} досье</span>
+                  {/* Полоса прогресса рисуется только тем, кто уже начинал:
+                      пустая полоса у того, кто пришёл впервые, — это укор
+                      ни за что. */}
+                  <span class="wcard__prog" data-work-prog hidden>
+                    <span class="wcard__bar" data-work-bar />
+                    <span class="wcard__ratio" data-work-ratio />
+                  </span>
+                </span>
               </a>
             </li>
           ))
         }
       </ul>
-    </div>
-  </section>
+    </section>
+
+    <section class="works__band works__band--soon" aria-labelledby="h-soon">
+      <h2 class="works__band-h" id="h-soon">Скоро</h2>
+      <p class="works__note">
+        Разбираем по одному. Что разберём следующим — решает голосование в
+        конце тест-дыры.
+      </p>
+
+      <ul class="works__grid works__grid--soon">
+        {
+          poVolnam.map((w) => (
+            <li>
+              <span class="wcard wcard--soon" aria-disabled="true">
+                <span class="wcard__author">{w.author}</span>
+                <span class="wcard__title">{w.title}</span>
+                <span class="wcard__meta">
+                  {w.genre} · {w.year}
+                </span>
+                <span class="wcard__foot">
+                  <span class="wcard__count">{w.cards} досье</span>
+                  <span class="wcard__soon">скоро</span>
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
 
   <script>
-    import { mountTitleScene, armSceneLinks } from '../scripts/petals.js';
-    import { goal } from '../scripts/metrika.js';
-    // Лепестки живут только на этом экране: здесь они играют фоном, и отсюда
-    // переход в тренажёр — настоящая смена сцены (§6.3, §8). На страницах
-    // заданий движок не грузится вовсе.
-    document.addEventListener('astro:page-load', () => {
-      mountTitleScene({ count: window.innerWidth < 760 ? 6 : 10 });
-      armSceneLinks();
-
-      // Нажатие на главную кнопку — вершина воронки.
-      document
-        .querySelector('.hero__cta')
-        ?.addEventListener('click', () => goal('start-training'));
-    });
+    import { mountWorks } from '../scripts/works-grid.js';
+    document.addEventListener('astro:page-load', () => mountWorks());
   </script>
 </Shell>

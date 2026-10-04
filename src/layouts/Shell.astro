@@ -5,7 +5,7 @@ import '../styles/world.css';
 import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
-const { title, screen = '', description } = Astro.props;
+const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
 const pageTitle = `${title} — Сюжетная дыра`;
 
 // Описание собрано из продуктовой правды (@PRODUCT.md), а не сочинено под SEO.
@@ -74,7 +74,7 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
     <!-- Переходы между страницами: карточка героя перетекает в его разворот -->
     <ClientRouter />
   </head>
-  <body data-screen={screen}>
+  <body data-screen={screen} data-work={work} data-heroes={heroes || undefined}>
     <div class="stage">
       <slot />
     </div>

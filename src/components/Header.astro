@@ -1,54 +1,74 @@
 ---
-// Шапка сайта.
-//
-// В левом углу: на главной — знак, на всех остальных страницах «Главная».
-// Одно место, одна функция — и не нужен отдельный пункт в навигации.
-//
-// Заливки нет: шапка лежит на фотографии, и фон под ней не гасится.
-// Активный раздел помечен рукописным овалом, который скользит за курсором
-// и возвращается на активный (§5.4).
+/*
+ * Шапка сайта.
+ *
+ * Слева — одна ссылка, которая всегда ведёт на уровень выше: со страницы
+ * задания к титульной произведения, с титульной — ко всем произведениям,
+ * на самом верху — просто знак. Отдельного пункта «назад» в навигации нет
+ * и не нужно.
+ *
+ * Справа — три вкладки произведения, которое сейчас открыто. На странице
+ * выбора произведения их нет: выбирать раздел ещё нечего.
+ *
+ * Заливки нет: шапка лежит на фотографии, и фон под ней не гасится.
+ * Активный раздел помечен рукописным овалом, который скользит за курсором
+ * и возвращается на активный (§5.4).
+ */
 import Logo from './Logo.astro';
-import { sections } from '../data/ionych.js';
+import { sectionsOf, workBySlug } from '../data/works.js';
 import { to } from '../scripts/paths.js';
-const { active = '' } = Astro.props;
-const isHome = !active;
+
+const { active = '', work = '' } = Astro.props;
+
+const rabota = work ? workBySlug[work] : null;
+const sections = rabota ? sectionsOf(rabota.slug) : [];
+
+// Три положения шапки: корень сайта, титульная произведения, страница задания.
+const gde = !rabota ? 'koren' : active === 'title' ? 'titul' : 'zadanie';
+
+const nazad =
+  gde === 'titul'
+    ? { href: to(''), word: 'Все произведения' }
+    : { href: to(`${rabota?.slug}/`), word: rabota?.title || 'Назад' };
 ---
 
 <header class="hdr">
   {
-    isHome ? (
+    gde === 'koren' ? (
       <span class="hdr__brand hdr__brand--mark">
         <Logo />
       </span>
     ) : (
-      <a class="hdr__brand hdr__brand--home" href={to('')}>
+      <a class="hdr__brand hdr__brand--home" href={nazad.href}>
         <span class="hdr__home-arrow" aria-hidden="true">←</span>
-        <span class="hdr__home-word">Главная</span>
+        <span class="hdr__home-word">{nazad.word}</span>
       </a>
     )
   }
 
-  <nav class="hdr__nav" aria-label="Разделы произведения">
-    <ul class="hdr__list" data-slide-nav>
-      {
-        sections.map((s) => (
-          <li>
-            <a
-              class="hdr__link"
-              href={to(s.href)}
-              data-slide-item
-              data-current={s.id === active ? 'true' : undefined}
-              aria-current={s.id === active ? 'page' : undefined}
-            >
-              <span class="hdr__num">{s.num}</span>
-              <span class="hdr__name">{s.name}</span>
-              <span class="hdr__short">{s.short}</span>
-            </a>
-          </li>
-        ))
-      }
+  {
+    sections.length > 0 && (
+      <nav class="hdr__nav" aria-label="Разделы произведения">
+        <ul class="hdr__list" data-slide-nav>
+          {sections.map((s) => (
+            <li>
+              <a
+                class="hdr__link"
+                href={to(s.href)}
+                data-slide-item
+                data-current={s.id === active ? 'true' : undefined}
+                aria-current={s.id === active ? 'page' : undefined}
+              >
+                <span class="hdr__num">{s.num}</span>
+                <span class="hdr__name">{s.name}</span>
+                <span class="hdr__short">{s.short}</span>
+              </a>
+            </li>
+          ))}
 
-      <li class="hdr__cursor" data-slide-cursor aria-hidden="true"></li>
-    </ul>
-  </nav>
+          <li class="hdr__cursor" data-slide-cursor aria-hidden="true" />
+        </ul>
+      </nav>
+    )
+  }
 </header>

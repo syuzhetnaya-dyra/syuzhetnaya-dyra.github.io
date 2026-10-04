@@ -11,8 +11,8 @@ const cards = [
 ];
 ---
 
-<Shell title="Досье героев · Ионыч" screen="dosye">
-  <Header active="dosye" />
+<Shell title="Досье героев · Ионыч" screen="dosye" work="ionych">
+  <Header work="ionych" active="dosye" />
 
   <main class="dosye">
     <header class="ds-head">
@@ -87,7 +87,7 @@ const cards = [
       mountGlow('.deck__stage', '.deck__card');
 
       // Пройденные герои помечаются на карточках колоды.
-      const done = new Set(readDone());
+      const done = new Set(readDone(document.body.dataset.work || 'ionych'));
       document.querySelectorAll('.deck__card').forEach((card) => {
         if (done.has(card.dataset.hero)) card.dataset.done = 'true';
       });

@@ -4,12 +4,13 @@ import Header from '../../components/Header.astro';
 import NextWork from '../../components/NextWork.astro';
 import { heroes, heroById, checks, checkOrder, finalCheck, plural } from '../../data/ionych.js';
 import { to, asset } from '../../scripts/paths.js';
+import { rim } from '../../scripts/rim.js';
 
 const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id] }));
 ---
 
-<Shell title="Сюжетный чек · Ионыч" screen="check">
-  <Header active="check" />
+<Shell title="Сюжетный чек · Ионыч" screen="check" work="ionych">
+  <Header work="ionych" active="check" />
 
   <main class="check">
     <section class="pick">
@@ -24,7 +25,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
           blocks.map((b, i) => (
             <li>
               <a class="pick__row" href={to(`ionych/check/?hero=${b.id}`)} data-hero={b.id}>
-                <span class="pick__num">{['I', 'II', 'III', 'IV', 'V'][i]}</span>
+                <span class="pick__num">{rim(i + 1)}</span>
                 <span class="pick__body">
                   <span class="pick__name">{b.hero.name}</span>
                   <span class="pick__meta">
@@ -38,7 +39,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
         }
         <li>
           <a class="pick__row pick__row--final" href={to('ionych/check/?hero=final')} data-hero="final">
-            <span class="pick__num">VI</span>
+            <span class="pick__num">{rim(blocks.length + 1)}</span>
             <span class="pick__body">
               <span class="pick__name">Финал рассказа</span>
               <span class="pick__meta">1 вопрос</span>

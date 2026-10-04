@@ -7,21 +7,26 @@ import { goal, goalOnce } from './metrika.js';
 import { revealNextWork } from './next-work.js';
 import { to } from './paths.js';
 
-const ORDER = ['ivan', 'vera', 'kotik', 'starcev', 'sluga', 'final'];
+// Какое произведение открыто — знает тело страницы; кто в нём герои и как
+// их зовут — сам список на экране. Держать эти списки здесь значило бы
+// заводить копию данных в скрипте и забывать её обновлять.
+const WORK = () => document.body.dataset.work || 'ionych';
 
-const NAMES = {
-  ivan: 'Иван Петрович Туркин',
-  vera: 'Вера Иосифовна',
-  kotik: 'Екатерина Ивановна',
-  starcev: 'Дмитрий Старцев',
-  sluga: 'Прислуга',
-  final: 'Финал рассказа',
-};
+function geroi(pick) {
+  return [...pick.querySelectorAll('.pick__row')].map((row) => ({
+    id: row.dataset.hero,
+    name: row.querySelector('.pick__name')?.textContent?.trim() || row.dataset.hero,
+  }));
+}
 
 export function mountCheck() {
   const pick = document.querySelector('.pick');
   const runs = [...document.querySelectorAll('.run')];
   if (!pick || !runs.length) return;
+
+  const spisok = geroi(pick);
+  const ORDER = spisok.map((g) => g.id);
+  const NAMES = Object.fromEntries(spisok.map((g) => [g.id, g.name]));
 
   const wanted = new URLSearchParams(window.location.search).get('hero');
   const run = runs.find((r) => r.dataset.run === wanted);
@@ -31,11 +36,11 @@ export function mountCheck() {
   if (run) {
     pick.hidden = true;
     run.hidden = false;
-    mountRun(run);
+    mountRun(run, ORDER, NAMES);
   }
 
   function paintPicker() {
-    const done = new Set(readDone());
+    const done = new Set(readDone(WORK()));
 
     pick.querySelectorAll('.pick__row').forEach((row) => {
       const isDone = done.has(row.dataset.hero);
@@ -63,7 +68,7 @@ export function mountCheck() {
   }
 }
 
-function mountRun(root) {
+function mountRun(root, ORDER, NAMES) {
   const heroId = root.dataset.run;
   const total = Number(root.dataset.total);
   const sections = [...root.querySelectorAll('.q')];
@@ -162,16 +167,16 @@ function mountRun(root) {
     // Мерцание на заголовке итога — только за безошибочный проход.
     done.dataset.clean = score === total ? 'true' : 'false';
 
-    markDone(heroId);
+    markDone(WORK(), heroId);
 
     const note = done.querySelector('[data-next]');
-    const left = ORDER.filter((id) => !new Set(readDone()).has(id));
+    const left = ORDER.filter((id) => !new Set(readDone(WORK())).has(id));
 
     if (!left.length) {
-      note.innerHTML = `Все герои закрыты. <a class="done__link" href="${to('ionych/dyra/')}">Открыть тест-дыру</a>`;
+      note.innerHTML = `Все герои закрыты. <a class="done__link" href="${to(`${WORK()}/dyra/`)}">Открыть тест-дыру</a>`;
     } else {
       const nextId = left[0];
-      note.innerHTML = `Дальше по порядку — <a class="done__link" href="${to(`ionych/check/?hero=${nextId}`)}">${NAMES[nextId]}</a>`;
+      note.innerHTML = `Дальше по порядку — <a class="done__link" href="${to(`${WORK()}/check/?hero=${nextId}`)}">${NAMES[nextId]}</a>`;
     }
 
     paintCounter(true);

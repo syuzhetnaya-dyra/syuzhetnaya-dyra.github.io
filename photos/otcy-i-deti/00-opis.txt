@@ -1,0 +1,24 @@
+Промты для картинок: otcy-i-deti
+
+В каждом файле — только текст промта. Открыть, выделить всё, вставить
+в ChatGPT или Gemini вместе с образцом стиля.
+
+Образец для карточек героев:
+https://syuzhetnaya-dyra.github.io/heroes/cut/ionych__starcev.webp
+
+Образец для главного экрана:
+https://syuzhetnaya-dyra.github.io/hero/ionych-1680.jpg
+
+Файлы:
+  bazarov.txt — Евгений Базаров
+  arkadiy.txt — Аркадий Кирсанов
+  nikolay-petrovich.txt — Николай Петрович Кирсанов
+  pavel-petrovich.txt — Павел Петрович Кирсанов
+  odintsova.txt — Анна Сергеевна Одинцова
+  katya.txt — Катя Локтева
+  fenechka.txt — Фенечка
+  roditeli-bazarova.txt — Василий Иванович и Арина Власьевна
+  sitnikov-kukshina.txt — Ситников и Кукшина
+  00-glavnyy-ekran.txt — Главный экран произведения
+
+Разбор по каждому промту — что подтверждено текстом и где — в photos/otcy-i-deti.md

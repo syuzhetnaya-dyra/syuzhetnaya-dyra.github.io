@@ -33,12 +33,25 @@ const { src, srcNarrow, alt = '', position = 'center 40%' } = Astro.props;
 const uid = `cine-${Math.random().toString(36).slice(2, 9)}`;
 const wide = src;
 const narrow = srcNarrow || src;
+
+// Снимка может не быть: произведение собрано, а картинки ещё не нарисованы.
+// Пустой url('') браузер считает ссылкой на саму страницу и грузит её
+// второй раз — поэтому при отсутствии снимка правило не пишется вовсе, а
+// кадр остаётся бумагой.
+const estSnimok = Boolean(wide);
 ---
 
-<style is:inline set:html={`#${uid}{background-image:url('${narrow}')}
-@media (min-width:760px){#${uid}{background-image:url('${wide}')}}`}></style>
+{
+  estSnimok && (
+    <style
+      is:inline
+      set:html={`#${uid}{background-image:url('${narrow}')}
+@media (min-width:760px){#${uid}{background-image:url('${wide}')}}`}
+    />
+  )
+}
 
-<div class="cine" data-cine>
+<div class="cine" data-cine data-bez-snimka={estSnimok ? undefined : 'true'}>
   <div
     class="cine__plate"
     id={uid}

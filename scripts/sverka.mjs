@@ -136,7 +136,36 @@ async function sverit(r) {
     }
   }
 
-  return { slug: r.slug, glav: glavy.size, citat, najdeno, bedy };
+  // ── Вопросы чека: привязка к строке досье ──
+  //
+  // «Нет строки в досье — нет вопроса» держится только пока это проверяет
+  // машина: опечатка в названии строки не видна ни при чтении данных, ни на
+  // странице, а правило при этом уже нарушено.
+  const karty = r.karty(modul);
+  const stroki = new Set(karty.flatMap((k) => k.rows.map((row) => row.key)));
+  const vopros = { vsego: 0, bezRow: 0 };
+
+  const vseVoprosy = [
+    ...Object.entries(modul.checks || {}).flatMap(([hero, list]) =>
+      list.map((q, i) => ({ q, gde: `${hero} · вопрос ${i + 1}` }))
+    ),
+    ...(modul.finalCheck ? [{ q: modul.finalCheck, gde: 'финал' }] : []),
+  ];
+
+  for (const { q, gde } of vseVoprosy) {
+    vopros.vsego += 1;
+    if (!q.row) {
+      vopros.bezRow += 1;
+      continue;
+    }
+    if (!stroki.has(q.row)) bedy.push(`${gde}: ссылается на строку досье «${q.row}», которой нет`);
+    if (!Array.isArray(q.options) || q.options.length !== 3) bedy.push(`${gde}: вариантов не три`);
+    if (typeof q.answer !== 'number' || !q.options?.[q.answer]) bedy.push(`${gde}: неверный номер ответа`);
+    if (new Set(q.options).size !== q.options?.length) bedy.push(`${gde}: варианты повторяются`);
+    if (!q.why || q.why.length < 20) bedy.push(`${gde}: нет пояснения`);
+  }
+
+  return { slug: r.slug, glav: glavy.size, citat, najdeno, vopros, bedy };
 }
 
 // ─── Запуск ───
@@ -147,6 +176,10 @@ for (const r of RABOTY) {
   console.log(`\n── ${it.slug} ──`);
   if (it.citat !== undefined) {
     console.log(`глав ${it.glav} · цитат ${it.citat} · найдено дословно ${it.najdeno}`);
+  }
+  if (it.vopros) {
+    const hvost = it.vopros.bezRow ? ` · без привязки к досье ${it.vopros.bezRow}` : ' · все привязаны к досье';
+    console.log(`вопросов чека ${it.vopros.vsego}${hvost}`);
   }
   if (it.bedy.length) {
     vsegoBed += it.bedy.length;

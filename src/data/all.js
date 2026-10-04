@@ -50,8 +50,14 @@ function sobrat(slug, modul, zadaniya) {
   const checks = modul.checks || {};
   const checkOrder = (modul.checkOrder || []).filter((id) => (checks[id] || []).length);
 
+  // Снимок первого экрана — по тому же правилу: есть файл или нет файла
+  const ekran = existsSync(join(PUBLIC, `hero/${slug}-1680.jpg`))
+    ? { wide: `hero/${slug}-1680.jpg`, narrow: `hero/${slug}-900.jpg` }
+    : null;
+
   return {
     work: workBySlug[slug],
+    ekran,
     cards,
     cardById: Object.fromEntries(cards.map((c) => [c.id, c])),
     checks,

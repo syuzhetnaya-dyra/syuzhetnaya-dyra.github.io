@@ -4316,3 +4316,63 @@ body:not([data-screen='title']) .hdr {
   opacity: 0.55;
   user-select: none;
 }
+
+/* Первый экран без снимка: бумага и тёплое пятно вместо фотографии. Так
+   выглядит произведение, которое собрано, но ещё не нарисовано. */
+.cine[data-bez-snimka] .cine__plate {
+  background-color: var(--paper);
+  background-image: radial-gradient(
+    90% 70% at 50% 35%,
+    rgba(176, 141, 79, 0.22) 0%,
+    rgba(176, 141, 79, 0) 68%
+  );
+}
+
+.cine[data-bez-snimka] .cine__scrim {
+  opacity: 0.35;
+}
+
+/* ─── Шапка на узком экране: длинное имя произведения ─── */
+
+/*
+ * В левом углу теперь не «Главная», а название произведения, и оно бывает
+ * длинным: «Отцы и дети» на 360 px выталкивало третью вкладку за край.
+ *
+ * Отрезать вкладки нельзя — ради них человек сюда и пришёл. Поэтому
+ * сжимается имя: оно ужимается первым и, если совсем не лезет, обрезается
+ * многоточием. Стрелка остаётся всегда: по ней понятно, что это путь назад,
+ * даже если слово не дочитано.
+ */
+@media (max-width: 620px) {
+  .hdr__brand--home {
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 7px;
+    padding-right: 4px;
+  }
+
+  .hdr__home-arrow {
+    flex: none;
+  }
+
+  .hdr__home-word {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+  }
+
+  .hdr__nav {
+    flex: none;
+    margin-left: auto;
+  }
+}
+
+/* До 400 px слово уходит совсем: остаётся стрелка. Три вкладки и обрывок
+   названия в одной строке читаются хуже, чем три вкладки и стрелка. */
+@media (max-width: 400px) {
+  .hdr__home-word {
+    display: none;
+  }
+}

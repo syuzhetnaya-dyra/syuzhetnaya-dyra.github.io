@@ -13,7 +13,7 @@ export function getStaticPaths() {
 }
 
 const { work: slug } = Astro.params;
-const { work, cards, checks, finalCheck, zadaniya } = dataBySlug[slug];
+const { work, cards, checks, finalCheck, zadaniya, ekran } = dataBySlug[slug];
 const { warmup, matching, terms } = zadaniya;
 
 const heroCount = cards.length;
@@ -29,8 +29,8 @@ const cast = cards.map((c) => ({ ...c, anchor: c.id }));
   <Header work={slug} active="title" />
 
   <CinematicPhoto
-    src={asset(`hero/${slug}-1680.jpg`)}
-    srcNarrow={asset(`hero/${slug}-900.jpg`)}
+    src={ekran ? asset(ekran.wide) : ''}
+    srcNarrow={ekran ? asset(ekran.narrow) : ''}
     alt=""
     position="center 42%"
   >

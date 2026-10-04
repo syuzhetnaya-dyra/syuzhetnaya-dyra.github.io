@@ -4264,3 +4264,55 @@ body:not([data-screen='title']) .hdr {
     transition: none;
   }
 }
+
+/* ─── Силуэт вместо снимка ─── */
+
+/*
+ * Пока картинки героя нет, карточка не должна выглядеть сломанной. Силуэт —
+ * это та же бумага, что под коллажем, с инициалом и золотым волоском: видно,
+ * что место занято и ждёт снимка, а не что сайт не загрузился.
+ *
+ * Тот же силуэт получат малые карточки, которым собственного снимка не
+ * полагается вовсе.
+ */
+.deck__silhouette,
+.spread__silhouette {
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  background-image: radial-gradient(
+    120% 90% at 50% 18%,
+    rgba(176, 141, 79, 0.16) 0%,
+    rgba(176, 141, 79, 0) 62%
+  );
+  font-family: var(--display);
+  font-size: clamp(3.5rem, 18vw, 7rem);
+  line-height: 1;
+  color: var(--gold-text);
+  opacity: 0.5;
+  user-select: none;
+}
+
+.deck__silhouette {
+  width: 100%;
+  height: 100%;
+}
+
+.spread__silhouette {
+  aspect-ratio: 820 / 1230;
+  width: 100%;
+  border-bottom: 1px solid var(--gold);
+}
+
+.run__silhouette {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 81px;
+  background: var(--paper);
+  font-family: var(--display);
+  font-size: 1.75rem;
+  color: var(--gold-text);
+  opacity: 0.55;
+  user-select: none;
+}

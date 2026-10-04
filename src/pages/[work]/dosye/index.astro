@@ -1,18 +1,19 @@
 ---
 import Shell from '../../../layouts/Shell.astro';
 import Header from '../../../components/Header.astro';
-import { family, heroes } from '../../../data/ionych.js';
+import { dataBySlug, sobrannye } from '../../../data/all.js';
 import { to, asset } from '../../../scripts/paths.js';
 
-// Семья идёт первой карточкой: она объясняет всех остальных.
-const cards = [
-  { ...family, isFamily: true, photo: 'turkiny' },
-  ...heroes.map((h) => ({ ...h, photo: h.id })),
-];
+export function getStaticPaths() {
+  return sobrannye.map((slug) => ({ params: { work: slug } }));
+}
+
+const { work } = Astro.params;
+const { work: rabota, cards } = dataBySlug[work];
 ---
 
-<Shell title="Досье героев · Ионыч" screen="dosye" work="ionych">
-  <Header work="ionych" active="dosye" />
+<Shell title={`Досье героев · ${rabota.title}`} screen="dosye" work={work}>
+  <Header work={work} active="dosye" />
 
   <main class="dosye">
     <header class="ds-head">
@@ -30,25 +31,31 @@ const cards = [
           cards.map((c, i) => (
             <a
               class="deck__card"
-              href={to(`ionych/dosye/${c.photo}/`)}
-              data-hero={c.photo}
+              href={to(`${work}/dosye/${c.id}/`)}
+              data-hero={c.id}
               data-i={i}
               aria-label={`Открыть досье: ${c.name}`}
             >
               {/* Вырезанный коллаж, а не полный кадр: карточка — это бумага,
                   на которую он наклеен. И тот же файл, что на развороте, —
                   иначе при переходе снимок подменялся бы другим. */}
-              <img
-                class="deck__img"
-                src={asset(`heroes/cut/${c.photo}.webp`)}
-                alt=""
-                width="820"
-                height="1230"
-                loading={i > 1 ? 'lazy' : 'eager'}
-                decoding="async"
-                draggable="false"
-                style={`view-transition-name: hero-${c.photo}`}
-              />
+              {c.photo ? (
+                <img
+                  class="deck__img"
+                  src={asset(c.photo)}
+                  alt=""
+                  width="820"
+                  height="1230"
+                  loading={i > 1 ? 'lazy' : 'eager'}
+                  decoding="async"
+                  draggable="false"
+                  style={`view-transition-name: hero-${c.id}`}
+                />
+              ) : (
+                <span class="deck__img deck__silhouette" aria-hidden="true">
+                  {c.initial}
+                </span>
+              )}
               <span class="deck__plate">
                 <span class="deck__name">{c.name}</span>
                 <span class="deck__role">{c.aka ? `«${c.aka}»` : c.role}</span>
@@ -69,7 +76,7 @@ const cards = [
       </div>
 
       <div class="deck__act">
-        <a class="deck__open" href={to(`ionych/dosye/${cards[0].photo}/`)} data-deck-open>
+        <a class="deck__open" href={to(`${work}/dosye/${cards[0].id}/`)} data-deck-open>
           Открыть досье
           <span class="deck__open-arrow" aria-hidden="true">→</span>
         </a>
@@ -87,7 +94,7 @@ const cards = [
       mountGlow('.deck__stage', '.deck__card');
 
       // Пройденные герои помечаются на карточках колоды.
-      const done = new Set(readDone(document.body.dataset.work || 'ionych'));
+      const done = new Set(readDone(document.body.dataset.work));
       document.querySelectorAll('.deck__card').forEach((card) => {
         if (done.has(card.dataset.hero)) card.dataset.done = 'true';
       });

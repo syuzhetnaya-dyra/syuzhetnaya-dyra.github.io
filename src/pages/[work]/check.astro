@@ -2,15 +2,27 @@
 import Shell from '../../layouts/Shell.astro';
 import Header from '../../components/Header.astro';
 import NextWork from '../../components/NextWork.astro';
-import { heroes, heroById, checks, checkOrder, finalCheck, plural } from '../../data/ionych.js';
+import { dataBySlug, sobrannye } from '../../data/all.js';
+import { plural } from '../../data/ionych.js';
 import { to, asset } from '../../scripts/paths.js';
 import { rim } from '../../scripts/rim.js';
 
-const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id] }));
+export function getStaticPaths() {
+  // Чек строится только там, где вопросы уже есть: пустая страница с
+  // обещанием «скоро» хуже отсутствия страницы.
+  return sobrannye
+    .filter((slug) => dataBySlug[slug].checkOrder.length)
+    .map((slug) => ({ params: { work: slug } }));
+}
+
+const { work } = Astro.params;
+const { work: rabota, cardById, checks, checkOrder, finalCheck } = dataBySlug[work];
+
+const blocks = checkOrder.map((id) => ({ id, hero: cardById[id], list: checks[id] }));
 ---
 
-<Shell title="Сюжетный чек · Ионыч" screen="check" work="ionych">
-  <Header work="ionych" active="check" />
+<Shell title={`Сюжетный чек · ${rabota.title}`} screen="check" work={work}>
+  <Header work={work} active="check" />
 
   <main class="check">
     <section class="pick">
@@ -24,7 +36,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
         {
           blocks.map((b, i) => (
             <li>
-              <a class="pick__row" href={to(`ionych/check/?hero=${b.id}`)} data-hero={b.id}>
+              <a class="pick__row" href={to(`${work}/check/?hero=${b.id}`)} data-hero={b.id}>
                 <span class="pick__num">{rim(i + 1)}</span>
                 <span class="pick__body">
                   <span class="pick__name">{b.hero.name}</span>
@@ -38,7 +50,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
           ))
         }
         <li>
-          <a class="pick__row pick__row--final" href={to('ionych/check/?hero=final')} data-hero="final">
+          <a class="pick__row pick__row--final" href={to(`${work}/check/?hero=final`)} data-hero="final">
             <span class="pick__num">{rim(blocks.length + 1)}</span>
             <span class="pick__body">
               <span class="pick__name">Финал рассказа</span>
@@ -51,7 +63,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
 
       <div class="pick__gate" data-gate>
         <p class="pick__gate-text" data-gate-text></p>
-        <a class="pick__gate-go" href={to('ionych/dyra/')} data-petal-link data-gate-go hidden>
+        <a class="pick__gate-go" href={to(`${work}/dyra/`)} data-petal-link data-gate-go hidden>
           Открыть тест-дыру № 2
         </a>
 
@@ -61,10 +73,10 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
     </section>
 
     {
-      [...blocks, { id: 'final', hero: { name: 'Финал рассказа' }, list: [finalCheck] }].map((b) => (
+      [...blocks, { id: 'final', hero: { name: 'Финал произведения' }, list: finalCheck ? [finalCheck] : [] }].map((b) => (
         <section class="run" data-run={b.id} data-total={b.list.length} hidden>
           <header class="run__bar">
-            <a class="run__back" href={to('ionych/check/')}>Все герои</a>
+            <a class="run__back" href={to(`${work}/check/`)}>Все герои</a>
             <p class="prog-roman">
               <span class="prog-roman__now" data-counter>I</span>
               <span class="prog-roman__of">из {b.list.length}</span>
@@ -76,17 +88,20 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
               глазами. loading="lazy" внутри скрытой секции значит, что
               грузится ровно один портрет — тот, чей блок открыли. */}
           <div class="run__who">
-            {b.id !== 'final' && (
-              <img
-                class="run__face"
-                src={asset(`heroes/cut/thumb/${b.id}.webp`)}
-                alt=""
-                width="200"
-                height="300"
-                loading="lazy"
-                decoding="async"
-              />
-            )}
+            {b.id !== 'final' &&
+              (cardById[b.id]?.thumb ? (
+                <img
+                  class="run__face"
+                  src={asset(cardById[b.id]?.thumb || '')}
+                  alt=""
+                  width="200"
+                  height="300"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <span class="run__silhouette" aria-hidden="true">{cardById[b.id]?.initial || '?'}</span>
+              ))}
             <h1 class="run__hero">{b.hero.name}</h1>
           </div>
 
@@ -121,7 +136,7 @@ const blocks = checkOrder.map((id) => ({ id, hero: heroById[id], list: checks[id
               </p>
               <div class="done__actions">
                 <button class="done__again" type="button">Пройти заново</button>
-                <a class="done__back" href={to('ionych/check/')}>К списку героев</a>
+                <a class="done__back" href={to(`${work}/check/`)}>К списку героев</a>
               </div>
               <p class="done__next" data-next></p>
             </section>

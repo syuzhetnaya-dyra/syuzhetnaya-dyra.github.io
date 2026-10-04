@@ -2,9 +2,21 @@
 import Shell from '../../layouts/Shell.astro';
 import Header from '../../components/Header.astro';
 import NextWork from '../../components/NextWork.astro';
-import { warmup, matching, terms, taskFormat } from '../../data/zadaniya.js';
-import { checkOrder } from '../../data/ionych.js';
+import { dataBySlug, sobrannye } from '../../data/all.js';
+import { taskFormat } from '../../data/zadaniya.js';
 import { to } from '../../scripts/paths.js';
+
+export function getStaticPaths() {
+  // Дыра открывается там, где есть хотя бы одно сопоставление: страница с
+  // пустой колодой заданий ничему не учит.
+  return sobrannye
+    .filter((slug) => dataBySlug[slug].zadaniya.matching.length)
+    .map((slug) => ({ params: { work: slug } }));
+}
+
+const { work } = Astro.params;
+const { work: rabota, blokov, zadaniya } = dataBySlug[work];
+const { warmup, matching, terms } = zadaniya;
 
 /*
  * Все задания сопоставления и все термины кладутся в разметку сразу, а
@@ -18,8 +30,8 @@ import { to } from '../../scripts/paths.js';
  */
 ---
 
-<Shell title="Тест-дыра · Ионыч" screen="dyra" work="ionych" heroes={checkOrder.length + 1}>
-  <Header work="ionych" active="dyra" />
+<Shell title={`Тест-дыра · ${rabota.title}`} screen="dyra" work={work} heroes={blokov}>
+  <Header work={work} active="dyra" />
 
   <main class="exam">
     <header class="ds-head">
@@ -155,7 +167,7 @@ import { to } from '../../scripts/paths.js';
                 <p class="match__extra-text" data-extra-text />
                 <p class="match__extra-why">{task.extraWhy}</p>
                 {task.extraHero && (
-                  <a class="hero-link" href={to(`ionych/dosye/${task.extraHero}/`)} data-extra-link>
+                  <a class="hero-link" href={to(`${work}/dosye/${task.extraHero}/`)} data-extra-link>
                     <span class="hero-link__t">Посмотреть героя в досье</span>
                     <span aria-hidden="true">→</span>
                   </a>

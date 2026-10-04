@@ -6,7 +6,9 @@ import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
 const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
-const pageTitle = `${title} — Сюжетная дыра`;
+// На главной заголовок и есть «Сюжетная дыра» — приписывать его второй раз
+// значит выдать вкладку «Сюжетная дыра — Сюжетная дыра».
+const pageTitle = title === 'Сюжетная дыра' ? title : `${title} — Сюжетная дыра`;
 
 // Описание собрано из продуктовой правды (@PRODUCT.md), а не сочинено под SEO.
 const desc =

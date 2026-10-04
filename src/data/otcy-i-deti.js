@@ -330,7 +330,7 @@ export const cards = [
     id: 'roditeli-bazarova',
     name: 'Василий Иванович и Арина Власьевна',
     role: 'Родители Базарова',
-    group: true,
+    isGroup: true,
     rows: [
       {
         key: 'Василий Иванович · внешность',
@@ -372,7 +372,7 @@ export const cards = [
     id: 'sitnikov-kukshina',
     name: 'Ситников и Кукшина',
     role: 'Мнимые нигилисты',
-    group: true,
+    isGroup: true,
     rows: [
       {
         key: 'Ситников · лицо',

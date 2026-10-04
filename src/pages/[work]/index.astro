@@ -4,24 +4,33 @@ import Header from '../../components/Header.astro';
 import CinematicPhoto from '../../components/CinematicPhoto.astro';
 import HeroTitle from '../../components/HeroTitle.astro';
 import Scrap from '../../components/Scrap.astro';
-import { work, heroes, family, checks, plural } from '../../data/ionych.js';
-import { warmup, matching, terms } from '../../data/zadaniya.js';
+import { dataBySlug, sobrannye } from '../../data/all.js';
+import { plural } from '../../data/ionych.js';
 import { to, asset } from '../../scripts/paths.js';
 
-const heroCount = heroes.length + 1;
-const questionCount = Object.values(checks).reduce((n, list) => n + list.length, 0) + 1;
+export function getStaticPaths() {
+  return sobrannye.map((slug) => ({ params: { work: slug } }));
+}
+
+const { work: slug } = Astro.params;
+const { work, cards, checks, finalCheck, zadaniya } = dataBySlug[slug];
+const { warmup, matching, terms } = zadaniya;
+
+const heroCount = cards.length;
+const questionCount =
+  Object.values(checks).reduce((n, list) => n + list.length, 0) + (finalCheck ? 1 : 0);
 // Столько заданий действительно лежит в тест-дыре: задания № 1, № 2 и № 3.
 const taskCount = warmup.length + matching.length + terms.length;
 
-const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, anchor: h.id }))];
+const cast = cards.map((c) => ({ ...c, anchor: c.id }));
 ---
 
-<Shell title={work.title} screen="title">
-  <Header work="ionych" active="title" />
+<Shell title={work.title} screen="title" work={slug}>
+  <Header work={slug} active="title" />
 
   <CinematicPhoto
-    src={asset('hero/ionych-1680.jpg')}
-    srcNarrow={asset('hero/ionych-900.jpg')}
+    src={asset(`hero/${slug}-1680.jpg`)}
+    srcNarrow={asset(`hero/${slug}-900.jpg`)}
     alt=""
     position="center 42%"
   >
@@ -29,7 +38,7 @@ const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, an
       <HeroTitle text={work.title} />
 
       <div class="hero__act">
-        <a class="hero__cta" href={to('ionych/dosye/')} data-petal-link>
+        <a class="hero__cta" href={to(`${slug}/dosye/`)} data-petal-link>
           Начать тренировку
           <span class="hero__cta-arrow" aria-hidden="true">→</span>
         </a>
@@ -77,7 +86,7 @@ const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, an
         {
           cast.map((c) => (
             <li>
-              <a class="cast__item" href={to(`ionych/dosye/#${c.anchor}`)}>
+              <a class="cast__item" href={to(`${slug}/dosye/#${c.anchor}`)}>
                 <span class="cast__name">{c.name}</span>
                 <span class="cast__role">{c.aka ? `«${c.aka}»` : c.role}</span>
               </a>
@@ -87,7 +96,7 @@ const cast = [{ ...family, anchor: 'turkiny' }, ...heroes.map((h) => ({ ...h, an
         {
           cast.map((c) => (
             <li aria-hidden="true">
-              <a class="cast__item" href={to(`ionych/dosye/#${c.anchor}`)} tabindex="-1">
+              <a class="cast__item" href={to(`${slug}/dosye/#${c.anchor}`)} tabindex="-1">
                 <span class="cast__name">{c.name}</span>
                 <span class="cast__role">{c.aka ? `«${c.aka}»` : c.role}</span>
               </a>

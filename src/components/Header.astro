@@ -16,12 +16,25 @@
  */
 import Logo from './Logo.astro';
 import { sectionsOf, workBySlug } from '../data/works.js';
+import { dataBySlug } from '../data/all.js';
 import { to } from '../scripts/paths.js';
 
 const { active = '', work = '' } = Astro.props;
 
 const rabota = work ? workBySlug[work] : null;
-const sections = rabota ? sectionsOf(rabota.slug) : [];
+const d = work ? dataBySlug[work] : null;
+
+/*
+ * Показываем только те вкладки, которые у этого произведения действительно
+ * собраны. Вкладка, ведущая в 404, хуже отсутствующей: ученик решит, что
+ * сломан сайт, а не что раздел ещё не готов.
+ */
+const sobrano = {
+  dosye: Boolean(d?.cards.length),
+  check: Boolean(d?.checkOrder.length),
+  dyra: Boolean(d?.zadaniya?.matching?.length),
+};
+const sections = rabota ? sectionsOf(rabota.slug).filter((s) => sobrano[s.id]) : [];
 
 // Три положения шапки: корень сайта, титульная произведения, страница задания.
 const gde = !rabota ? 'koren' : active === 'title' ? 'titul' : 'zadanie';

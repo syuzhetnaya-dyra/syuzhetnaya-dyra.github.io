@@ -2,28 +2,23 @@
 import Shell from '../../../layouts/Shell.astro';
 import Header from '../../../components/Header.astro';
 import RollText from '../../../components/RollText.astro';
-import { family, heroes, checks, plural } from '../../../data/ionych.js';
+import { dataBySlug, sobrannye } from '../../../data/all.js';
+import { plural } from '../../../data/ionych.js';
 import { to, asset } from '../../../scripts/paths.js';
 import { rim } from '../../../scripts/rim.js';
 
-const cards = [
-  { ...family, isFamily: true, photo: 'turkiny' },
-  ...heroes.map((h) => ({ ...h, photo: h.id })),
-];
-
 export function getStaticPaths() {
-  const list = [
-    { ...family, isFamily: true, photo: 'turkiny' },
-    ...heroes.map((h) => ({ ...h, photo: h.id })),
-  ];
-  return list.map((c, i) => ({
-    params: { hero: c.photo },
-    props: { index: i },
-  }));
+  return sobrannye.flatMap((slug) =>
+    dataBySlug[slug].cards.map((c, i) => ({
+      params: { work: slug, hero: c.id },
+      props: { index: i },
+    }))
+  );
 }
 
-const { hero } = Astro.params;
+const { work } = Astro.params;
 const { index } = Astro.props;
+const { cards, checks } = dataBySlug[work];
 
 const card = cards[index];
 
@@ -53,7 +48,7 @@ const MOTION = {
   // Трое в ряд, кадр широкий: хватает наклона, вертикали почти не нужно.
   sluga: { dur: 7.8, amp: 5, tilt: 0.6, par: 0 },
 };
-const m = MOTION[card.photo] || { dur: 8, amp: 5, tilt: 0, par: 0 };
+const m = MOTION[card.id] || { dur: 8, amp: 5, tilt: 0, par: 0 };
 
 // Сдвиг фазы, чтобы снимок не стартовал строго из нижней точки.
 const phase = -(index * 1.37).toFixed(2);
@@ -76,8 +71,8 @@ const left = card.rows.slice(0, half);
 const right = card.rows.slice(half);
 ---
 
-<Shell title={`${card.name} · Досье`} screen="hero">
-  <Header work="ionych" active="dosye" />
+<Shell title={`${card.name} · Досье`} screen="hero" work={work}>
+  <Header work={work} active="dosye" />
 
   {/*
     Портрет по центру, досье по краям. Строки закрыты: на плашке стоит, о чём
@@ -102,16 +97,22 @@ const right = card.rows.slice(half);
     <div class="spread__grid" data-spread>
       <div class="spread__photo" data-portrait style={`--par: ${m.par}px`}>
         <div class="spread__photo-rev">
-          <img
-            class="spread__img"
-            src={asset(`heroes/cut/${card.photo}.webp`)}
-            alt=""
-            width="820"
-            height="1230"
-            fetchpriority="high"
-            decoding="async"
-            style={`--fd: ${m.dur}s; --fa: ${m.amp}px; --ft: ${m.tilt}deg; --fp: ${phase}s; view-transition-name: hero-${card.photo}`}
-          />
+          {card.photo ? (
+            <img
+              class="spread__img"
+              src={asset(card.photo)}
+              alt=""
+              width="820"
+              height="1230"
+              fetchpriority="high"
+              decoding="async"
+              style={`--fd: ${m.dur}s; --fa: ${m.amp}px; --ft: ${m.tilt}deg; --fp: ${phase}s; view-transition-name: hero-${card.id}`}
+            />
+          ) : (
+            <span class="spread__img spread__silhouette" aria-hidden="true">
+              {card.initial}
+            </span>
+          )}
         </div>
       </div>
 
@@ -157,8 +158,8 @@ const right = card.rows.slice(half);
 
     <div class="spread__foot">
       {
-        !card.isFamily && checks[card.id] ? (
-          <a class="ds-go" href={to(`ionych/check/?hero=${card.id}`)}>
+        !card.isGroup && checks[card.id] ? (
+          <a class="ds-go" href={to(`${work}/check/?hero=${card.id}`)}>
             Отработать в чеке
             <span class="ds-go__n">
               {checks[card.id].length}{' '}
@@ -173,15 +174,15 @@ const right = card.rows.slice(half);
         )
       }
 
-      <a class="spread__back" href={to('ionych/dosye/')}>Вся колода</a>
+      <a class="spread__back" href={to(`${work}/dosye/`)}>Вся колода</a>
     </div>
 
     <nav class="sheetdoc__nav" aria-label="Соседние герои">
-      <a class="sheetdoc__step" href={to(`ionych/dosye/${prev.photo}/`)}>
+      <a class="sheetdoc__step" href={to(`${work}/dosye/${prev.id}/`)}>
         <span class="sheetdoc__dir">← предыдущий</span>
         <span class="sheetdoc__who">{prev.name}</span>
       </a>
-      <a class="sheetdoc__step sheetdoc__step--next" href={to(`ionych/dosye/${next.photo}/`)}>
+      <a class="sheetdoc__step sheetdoc__step--next" href={to(`${work}/dosye/${next.id}/`)}>
         <span class="sheetdoc__dir">следующий →</span>
         <span class="sheetdoc__who">{next.name}</span>
       </a>

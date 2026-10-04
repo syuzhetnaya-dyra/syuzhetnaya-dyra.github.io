@@ -358,6 +358,14 @@ export const heroes = [
 
 export const heroById = Object.fromEntries(heroes.map((h) => [h.id, h]));
 
+/*
+ * Единый вид карточек — такой же, как у остальных произведений: семья идёт
+ * первой и помечена isGroup. Поле group у героев занято: там лежит
+ * название семьи, к которой герой принадлежит, и это не флаг. Отдельные экспорты family и heroes остались
+ * ради страниц, которые ими уже пользуются.
+ */
+export const cards = [{ ...family, isGroup: true }, ...heroes];
+
 // ─── Сюжетный чек: вопросы привязаны к герою из досье ───
 
 export const checks = {

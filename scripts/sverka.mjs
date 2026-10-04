@@ -31,6 +31,13 @@ const RABOTY = [
     syroy: 'ionych.raw.txt',
     chisto: 'ionych.txt',
   },
+  {
+    slug: 'otcy-i-deti',
+    dannye: 'src/data/otcy-i-deti.js',
+    karty: (m) => m.cards,
+    syroy: 'otcy-i-deti.raw.txt',
+    chisto: 'otcy-i-deti.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───

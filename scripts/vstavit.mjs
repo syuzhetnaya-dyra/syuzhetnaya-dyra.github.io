@@ -31,7 +31,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, extname, basename } from 'node:path';
 
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
-const VHOD = join(KORENb, 'входящие-картинки');
+/*
+ * Откуда брать картинки. По умолчанию — папка в проекте, но её ещё нужно
+ * найти, а искать папку с кириллическим именем в чужом Проводнике — лишний
+ * шаг. Поэтому путь можно просто назвать:
+ *
+ *   node scripts/vstavit.mjs "C:/Users/Anastasia/Downloads/картинки"
+ */
+const ukazan = process.argv.slice(2).find((a) => !a.startsWith('--'));
+const VHOD = ukazan || join(KORENb, 'входящие-картинки');
 const CUT = join(KORENb, 'public', 'heroes', 'cut');
 const THUMB = join(CUT, 'thumb');
 const HERO = join(KORENb, 'public', 'hero');

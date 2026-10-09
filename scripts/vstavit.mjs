@@ -26,7 +26,7 @@
  *   node scripts/vstavit.mjs --suho     — только показать, что куда ляжет
  */
 import sharp from 'sharp';
-import { readdirSync, mkdirSync, existsSync, renameSync } from 'node:fs';
+import { readdirSync, mkdirSync, existsSync, renameSync, readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, extname, basename } from 'node:path';
 
@@ -65,10 +65,23 @@ const TOL = 30;
 const SHIRINA = 820;
 const VYSOTA = 1230;
 
+/*
+ * Качество webp. На 86 карточки весили по 226 КБ — вдвое больше, чем у
+ * «Ионыча», и это при мобильном-первом. На 74 вес сходится с прежними
+ * карточками, а разницы на экране телефона не видно: коллаж и так
+ * состаренный, с зерном и мягким краем.
+ */
+const KACHESTVO = 74;
+
+// Полоса чистой бумаги внизу карточки под подпись — столько же, сколько
+// осталось само собой у самых просторных карточек «Ионыча».
+const POLE = 90;
+
 // ─── Кого мы вообще знаем ───
 
 const { dataBySlug } = await import(pathToFileURL(join(KORENb, 'src/data/all.js')).href);
 const { works } = await import(pathToFileURL(join(KORENb, 'src/data/works.js')).href);
+const { PROIZVEDENIYA, GEROI, PO_GLAZAM } = await import(pathToFileURL(join(KORENb, 'scripts/imena.mjs')).href);
 
 const prosto = (s) =>
   s
@@ -77,12 +90,31 @@ const prosto = (s) =>
     .replace(/[^a-zа-я0-9]+/g, ' ')
     .trim();
 
-// Словарь примет: по какому слову в имени файла узнаётся карточка
-const karty = [];
-for (const [slug, d] of Object.entries(dataBySlug)) {
-  for (const c of d.cards) {
-    const primety = new Set([c.id, ...prosto(c.name).split(' ').filter((w) => w.length > 3)]);
-    karty.push({ slug, id: c.id, name: c.name, primety: [...primety].map(prosto) });
+/*
+ * Карточки берём из базы произведений, а не из собранных данных: картинки
+ * приходят раньше, чем собрано произведение, и должны лечь на своё место
+ * заранее. Страница подхватит снимок в тот день, когда появится досье.
+ */
+const baza = readFileSync(join(KORENb, 'lithero-content/02_Baza_proizvedenij_i_geroev.md'), 'utf8').replace(/\r/g, '');
+const vseKarty = {};
+for (const chast of baza.split(/\n### /).slice(1)) {
+  const m = chast.match(/^(.+?)\s+-\s+`([a-z0-9-]+)`/);
+  if (!m) continue;
+  const spisok = [...chast.matchAll(/^\s+-\s+`([a-z0-9-]+)`\s*\|\s*([^|\n]+?)\s*\|/gm)].map((x) => ({
+    id: x[1],
+    name: x[2].trim(),
+  }));
+  if (spisok.length) vseKarty[m[2]] = spisok;
+}
+
+// Проверяем таблицу соответствий: каждый slug обязан быть в базе
+for (const [slug, pary] of Object.entries(GEROI)) {
+  const est = new Set((vseKarty[slug] || []).map((c) => c.id));
+  for (const [, id] of pary) {
+    if (!est.has(id)) {
+      console.error(`таблица имён: у «${slug}» нет карточки «${id}»`);
+      process.exit(1);
+    }
   }
 }
 
@@ -92,15 +124,56 @@ const ekrany = works.map((w) => ({
   primety: [w.slug, ...prosto(w.title).split(' ').filter((x) => x.length > 3)].map(prosto),
 }));
 
+/*
+ * Опознание идёт в два шага: сначала произведение, потом герой внутри него.
+ *
+ * Иначе не развести одноимённых: «михаил» — это и Коваленко в «Человеке в
+ * футляре», и Костылёв в «На дне», и Кутузов в «Войне и мире». Слово одно,
+ * герои разные, и без произведения выбор между ними — подбрасывание монеты.
+ */
 function opoznat(imya, shirokaya) {
   const n = prosto(imya);
-  const spisok = shirokaya ? ekrany : karty;
-  // Длинная примета вернее короткой: «базаров» надёжнее, чем «дети»
-  const nayden = spisok
-    .flatMap((k) => k.primety.map((p) => ({ k, p })))
-    .filter(({ p }) => p && n.includes(p))
-    .sort((a, b) => b.p.length - a.p.length)[0];
-  return nayden ? nayden.k : null;
+
+  if (shirokaya) {
+    const nayden = ekrany
+      .flatMap((k) => k.primety.map((p) => ({ k, p })))
+      .filter(({ p }) => p && n.includes(p))
+      .sort((a, b) => b.p.length - a.p.length)[0];
+    return nayden ? nayden.k : null;
+  }
+
+  // Определялось глазами — записано полным именем файла
+  const rukami = PO_GLAZAM[imya.toLowerCase()];
+  if (rukami) {
+    const [slug, id] = rukami;
+    const c = (vseKarty[slug] || []).find((x) => x.id === id);
+    if (c) return { slug, id, name: c.name };
+  }
+
+  // Шаг первый: какое произведение
+  const slug = PROIZVEDENIYA.map(([klyuch, s]) => ({ klyuch, s }))
+    .filter(({ klyuch }) => n.includes(klyuch))
+    .sort((a, b) => b.klyuch.length - a.klyuch.length)[0]?.s;
+
+  // Файл может быть назван сразу по-нашему: oblomov__olga.png. Проверяем по
+  // СЫРОМУ имени, а не по упрощённому: упрощение стирает дефисы, и slug
+  // вроде prestuplenie-i-nakazanie рассыпается на слова.
+  const pryamo = imya.toLowerCase().replace(/\.[a-z]+$/, '').match(/^([a-z0-9-]+)__([a-z0-9-]+)$/);
+  if (pryamo && vseKarty[pryamo[1]]) {
+    const c = vseKarty[pryamo[1]].find((x) => x.id === pryamo[2]);
+    if (c) return { slug: pryamo[1], id: c.id, name: c.name };
+  }
+  if (!slug) return null;
+
+  // Шаг второй: кто внутри
+  const pary = GEROI[slug] || [];
+  const geroy = pary
+    .filter(([klyuch]) => n.includes(klyuch))
+    .sort((a, b) => b[0].length - a[0].length)[0];
+  if (!geroy) return { slug, id: null, name: null };
+
+  const c = (vseKarty[slug] || []).find((x) => x.id === geroy[1]);
+  return { slug, id: geroy[1], name: c ? c.name : geroy[1] };
 }
 
 // ─── Вырезка фона ───
@@ -213,7 +286,8 @@ async function obrabotat(file) {
   const shirokaya = meta.width / meta.height > 1.2;
 
   const cel = opoznat(imya, shirokaya);
-  if (!cel) return { imya, bed: shirokaya ? 'не понял, к какому произведению экран' : 'не понял, чья карточка' };
+  if (!cel) return { imya, bed: shirokaya ? 'не понял, к какому произведению экран' : 'не понял ни произведения, ни героя' };
+  if (!shirokaya && !cel.id) return { imya, bed: `произведение «${cel.slug}» узнал, а героя — нет` };
 
   if (shirokaya) {
     // Первый экран: фон не режется, он и есть кадр
@@ -344,12 +418,22 @@ async function obrabotat(file) {
     mkdirSync(CUT, { recursive: true });
     mkdirSync(THUMB, { recursive: true });
     const obrez = { left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 };
+    /*
+     * Внизу карточки оставляется полоса чистой бумаги под подпись.
+     *
+     * У «Ионыча» снимки кончались сами собой за 60-90 пикселей до низа, и
+     * имя ложилось на бумагу — подложка под него не нужна. Присланные
+     * картинки заполняют кадр до края, и имя садилось прямо на тёмное
+     * пальто. Проще вернуть полосу, чем заводить градиент под текст: так
+     * новые карточки совпадают со старыми, а не живут по своим правилам.
+     */
     const kadr = sharp(rgba, { raw: { width: W, height: H, channels: 4 } })
       .extract(obrez)
-      .resize(SHIRINA, VYSOTA, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } });
-    await kadr.clone().webp({ quality: 86 }).toFile(join(CUT, `${cel.slug}__${cel.id}.webp`));
+      .resize(SHIRINA, VYSOTA - POLE, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .extend({ bottom: POLE, background: { r: 0, g: 0, b: 0, alpha: 0 } });
+    await kadr.clone().webp({ quality: KACHESTVO, effort: 6 }).toFile(join(CUT, `${cel.slug}__${cel.id}.webp`));
     await kadr.clone().resize(300, 450, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .webp({ quality: 82 }).toFile(join(THUMB, `${cel.slug}__${cel.id}.webp`));
+      .webp({ quality: 78, effort: 6 }).toFile(join(THUMB, `${cel.slug}__${cel.id}.webp`));
   }
 
   return {
@@ -371,10 +455,9 @@ const fayly = readdirSync(VHOD)
   .filter((f) => ['.png', '.jpg', '.jpeg', '.webp'].includes(extname(f).toLowerCase()))
   .map((f) => join(VHOD, f));
 
-if (!fayly.length) {
-  console.log('во «входящих» пусто — класть картинки туда');
-  process.exit(0);
-}
+// Пустая папка — не повод молчать: отчёт о недостающих картинках нужен сам
+// по себе, чаще даже чаще, чем сама раскладка.
+if (!fayly.length) console.log(`во «${VHOD}» картинок нет — показываю только, чего не хватает\n`);
 
 const lozhilos = [];
 const bedy = [];

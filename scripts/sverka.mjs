@@ -142,7 +142,13 @@ async function sverit(r) {
   // машина: опечатка в названии строки не видна ни при чтении данных, ни на
   // странице, а правило при этом уже нарушено.
   const karty = r.karty(modul);
+  // Строка может принадлежать своей карточке («Внешность») или чужой
+  // («turkiny:Как их видит город»): о семье Туркиных спрашивают в блоке
+  // Ивана Петровича, и вопрос честно ссылается туда, где факт записан.
   const stroki = new Set(karty.flatMap((k) => k.rows.map((row) => row.key)));
+  const svoi = new Set(karty.flatMap((k) => k.rows.map((row) => `${k.id}:${row.key}`)));
+  // 'имя' — вопрос про то, как героя зовут: опирается на саму карточку.
+  const znaem = (ref) => ref === 'имя' || (ref.includes(':') ? svoi.has(ref) : stroki.has(ref));
   const vopros = { vsego: 0, bezRow: 0 };
 
   const vseVoprosy = [
@@ -158,7 +164,7 @@ async function sverit(r) {
       vopros.bezRow += 1;
       continue;
     }
-    if (!stroki.has(q.row)) bedy.push(`${gde}: ссылается на строку досье «${q.row}», которой нет`);
+    if (!znaem(q.row)) bedy.push(`${gde}: ссылается на строку досье «${q.row}», которой нет`);
     if (!Array.isArray(q.options) || q.options.length !== 3) bedy.push(`${gde}: вариантов не три`);
     if (typeof q.answer !== 'number' || !q.options?.[q.answer]) bedy.push(`${gde}: неверный номер ответа`);
     if (new Set(q.options).size !== q.options?.length) bedy.push(`${gde}: варианты повторяются`);

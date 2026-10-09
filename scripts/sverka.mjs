@@ -32,6 +32,13 @@ const RABOTY = [
     chisto: 'ionych.txt',
   },
   {
+    slug: 'oblomov',
+    dannye: 'src/data/oblomov.js',
+    karty: (m) => m.cards,
+    syroy: 'oblomov.raw.txt',
+    chisto: 'oblomov.txt',
+  },
+  {
     slug: 'otcy-i-deti',
     dannye: 'src/data/otcy-i-deti.js',
     karty: (m) => m.cards,
@@ -78,7 +85,10 @@ async function sverit(r) {
 
   const tekst = pochistit(readFileSync(syroyPut, 'utf8'));
   const glavy = new Map();
-  const kuski = tekst.split(/^==\s*([IVXLC]+)\s*==\s*$/m);
+  // Метка главы бывает римской («IV») или составной («1.9» — часть первая,
+  // глава девятая): у «Обломова» главы нумеруются внутри каждой части
+  // заново, и «глава 9» без части — это четыре разных места в книге.
+  const kuski = tekst.split(/^==\s*([IVXLC]+|\d+\.\d+)\s*==\s*$/m);
   for (let i = 1; i < kuski.length; i += 2) glavy.set(kuski[i], kuski[i + 1]);
   if (!glavy.size) return { slug: r.slug, bedy: ['в тексте не нашлось ни одной главы вида «== I =='] };
 
@@ -128,7 +138,12 @@ async function sverit(r) {
       najdeno += 1;
 
       // Метка главы бывает составной: «I и IV» — фраза звучит дважды.
-      const zayavleny = String(row.chapter || '').split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
+      // «часть 1, глава 9» приводим к метке «1.9»; «I и IV» остаётся парой
+      // римских. Человеку в карточке читается словами, скрипту — меткой.
+      const slova = String(row.chapter || '');
+      const zayavleny = /\d/.test(slova)
+        ? [(slova.match(/\d+/g) || []).join('.')]
+        : slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
       if (!zayavleny.length) bedy.push(`${gde}: не указана глава`);
       else if (!zayavleny.includes(najdenaV)) {
         bedy.push(`${gde}: заявлена глава ${row.chapter}, а цитата в главе ${najdenaV}`);

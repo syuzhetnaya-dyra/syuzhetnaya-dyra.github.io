@@ -24,6 +24,17 @@ const RABOTY = {
     glav: 28,
     izdanie: 'ru.wikisource.org · И. С. Тургенев. Отцы и дети',
   },
+  oblomov: {
+    /*
+     * Роман разбит на четыре части, и главы нумеруются внутри каждой
+     * заново. «Глава 9» без части — это четыре разных места в книге, и
+     * ученик, отправленный по такой ссылке, ищет цитату втрое дольше.
+     * Поэтому метка составная: 1.9 значит часть первая, глава девятая.
+     */
+    chasti: [11, 12, 12, 11],
+    stranica: (chast, glava) => `Обломов (Гончаров)/Часть ${chast}/Глава ${glava}`,
+    izdanie: 'ru.wikisource.org · И. А. Гончаров. Обломов',
+  },
 };
 
 const rim = (n) => {
@@ -42,11 +53,30 @@ if (!r) {
 
 mkdirSync(SOURCES, { recursive: true });
 
+/*
+ * Список страниц к скачиванию. У одних произведений главы идут сплошной
+ * нумерацией, у других — внутри частей, и тогда метка составная: «1.9»
+ * значит часть первая, глава девятая. Одна «глава 9» без части — это
+ * четыре разных места в книге.
+ */
+const stranicy = r.chasti
+  ? r.chasti.flatMap((skolko, i) =>
+      Array.from({ length: skolko }, (_, j) => ({
+        metka: `${i + 1}.${j + 1}`,
+        imya: r.stranica(i + 1, j + 1),
+        podpis: `часть ${i + 1}, глава ${j + 1}`,
+      }))
+    )
+  : Array.from({ length: r.glav }, (_, i) => ({
+      metka: rim(i + 1),
+      imya: r.stranica(i + 1),
+      podpis: `глава ${rim(i + 1)}`,
+    }));
+
 const kuski = [];
-for (let n = 1; n <= r.glav; n += 1) {
+for (const [i, s] of stranicy.entries()) {
   const url =
-    'https://ru.wikisource.org/w/index.php?action=raw&title=' +
-    encodeURIComponent(r.stranica(n));
+    'https://ru.wikisource.org/w/index.php?action=raw&title=' + encodeURIComponent(s.imya);
 
   let telo = '';
   for (let popytka = 1; popytka <= 3; popytka += 1) {
@@ -56,7 +86,7 @@ for (let n = 1; n <= r.glav; n += 1) {
       telo = await otvet.text();
       break;
     } catch (e) {
-      if (popytka === 3) throw new Error(`глава ${n}: ${e.message}`);
+      if (popytka === 3) throw new Error(`${s.podpis}: ${e.message}`);
       await new Promise((res) => setTimeout(res, 800 * popytka));
     }
   }
@@ -64,7 +94,7 @@ for (let n = 1; n <= r.glav; n += 1) {
   // Пустая или подозрительно короткая глава — повод остановиться, а не
   // молча записать заглушку: сверка потом «не найдёт» цитаты и мы будем
   // искать ошибку в данных, которой там нет.
-  if (telo.trim().length < 400) throw new Error(`глава ${n} пришла пустой (${telo.length} байт)`);
+  if (telo.trim().length < 400) throw new Error(`${s.podpis} пришла пустой (${telo.length} байт)`);
 
   // У страницы главы есть свой заголовок и хвост с примечаниями. Заголовок
   // дублировал бы наш и сбивал счёт глав, примечания — это не текст романа,
@@ -72,12 +102,12 @@ for (let n = 1; n <= r.glav; n += 1) {
   telo = telo.replace(/^==\s*Примечания\s*==[\s\S]*$/m, '');
   telo = telo.replace(/^==+\s*(?:Глава\s*)?[IVXL\d]+\s*==+\s*$/gim, '');
 
-  kuski.push(`== ${rim(n)} ==\n${telo.trim()}`);
-  process.stdout.write(`\rглав скачано: ${n} из ${r.glav}`);
+  kuski.push(`== ${s.metka} ==\n${telo.trim()}`);
+  process.stdout.write(`\rскачано: ${i + 1} из ${stranicy.length}`);
 }
 
 const put = join(SOURCES, `${slug}.raw.txt`);
 writeFileSync(put, kuski.join('\n\n') + '\n', 'utf8');
 console.log(`\n${put}`);
-console.log(`глав ${r.glav}, ${(kuski.join('').length / 1024).toFixed(0)} КБ`);
+console.log(`кусков ${stranicy.length}, ${(kuski.join('').length / 1024).toFixed(0)} КБ`);
 console.log(`издание: ${r.izdanie}`);

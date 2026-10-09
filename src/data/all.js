@@ -13,6 +13,7 @@
 
 import * as ionych from './ionych.js';
 import * as otcyIDeti from './otcy-i-deti.js';
+import * as oblomov from './oblomov.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -74,6 +75,11 @@ export const dataBySlug = {
     warmup: ionychWarmup,
     matching: ionychMatching,
     terms: ionychTerms,
+  }),
+  oblomov: sobrat('oblomov', oblomov, {
+    warmup: oblomov.warmup || [],
+    matching: oblomov.matching || [],
+    terms: oblomov.terms || [],
   }),
   'otcy-i-deti': sobrat('otcy-i-deti', otcyIDeti, {
     warmup: otcyIDeti.warmup || [],

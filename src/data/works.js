@@ -39,7 +39,7 @@ export const works = [
     cards: 9,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'oblomov',

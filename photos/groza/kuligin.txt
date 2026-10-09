@@ -1,0 +1,39 @@
+Создай вертикальную editorial-фотографию Кулигина из произведения А. Н. Островского «Гроза».
+
+Кулигин — мещанин, часовщик-самоучка, отыскивающий перпетуум-мобиле. Одет по-русски, бедно и опрятно. Пожилой человек: пятьдесят лет он каждый день глядит за Волгу и не может наглядеться. Внешность в пьесе не описана — дать обобщённо.
+
+Авторская ремарка к списку действующих лиц: все лица, кроме Бориса, одеты по-русски. Борис — единственный в европейском платье.
+
+Главная визуальная идея — единственный в городе, кто видит красоту и хочет общей пользы, — и единственный, кого никто не слушает.
+
+Можно использовать элементы: часовой инструмент и лупа, чертёж громоотвода, самодельные солнечные часы, высокий берег Волги, общественный сад — как фрагменты коллажа.
+
+Все фигуры должны быть вырезаны из фотографии неровными рваными краями и помещены на кремовый бумажный фон. Некоторые части изображения должны исчезать, будто куски старой газетной фотографии были оторваны.
+
+Стиль: editorial photographic collage, torn newspaper clipping aesthetic, mid-19th-century Russian realism, archival literary magazine, muted sepia and faded warm colors, cream aged paper, subtle black-and-brown photography, cinematic natural light, film grain, imperfect vintage print texture, sophisticated contemporary art direction.
+
+Не делать персонажей карикатурными. Атмосфера: тихое восхищение природой посреди города, которому до неё нет дела.
+
+Без текста, букв, надписей, логотипов, UI и современных предметов. Без насилия, крови и сцен смерти. Вертикальный формат 2:3.
+
+К сообщению приложен образец серии (карточка «Старцев» из «Ионыча»). Повтори его фактуру кремовой бумаги, рваные края, цветовую гамму и плёночное зерно, но не копируй его композицию и лицо.
+
+IMPORTANT SERIES CONSISTENCY:
+
+This image is one of 8 character cards from the same literary editorial collection.
+
+All images in the collection must share exactly the same visual language:
+cream archival paper background, torn photographic edges, fragmented newspaper clipping composition, realistic mid-19th-century Russian characters, muted warm photographic palette, subtle sepia, faded black, dark brown, restrained burgundy accents, soft cinematic light, fine film grain, imperfect analog printing texture, sophisticated contemporary editorial art direction.
+
+The character photograph must look like a real photographic portrait integrated into a torn newspaper page, NOT like an illustration, painting, fantasy art, anime, or generic AI portrait.
+
+Use asymmetrical torn edges and irregular photographic fragments.
+Leave negative space around the character.
+No typography.
+No readable text.
+No captions.
+No logos.
+No UI.
+No modern objects.
+
+The images should look like pages from the same experimental literary magazine.

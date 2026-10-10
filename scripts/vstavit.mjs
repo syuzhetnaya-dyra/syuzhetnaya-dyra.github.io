@@ -135,11 +135,20 @@ function opoznat(imya, shirokaya) {
   const n = prosto(imya);
 
   if (shirokaya) {
-    const nayden = ekrany
+    // Сначала по словам названия, потом по той же таблице соответствий, что
+    // у карточек: «РУСЬ» вместо «Кому на Руси жить хорошо», «ИВАН
+    // ДЕНИСОВИЧ» вместо «Один день Ивана Денисовича». Называют файлы
+    // по-человечески, а не по заглавию целиком.
+    const poNazvaniyu = ekrany
       .flatMap((k) => k.primety.map((p) => ({ k, p })))
       .filter(({ p }) => p && n.includes(p))
       .sort((a, b) => b.p.length - a.p.length)[0];
-    return nayden ? nayden.k : null;
+    if (poNazvaniyu) return poNazvaniyu.k;
+
+    const slug = PROIZVEDENIYA.map(([klyuch, s]) => ({ klyuch, s }))
+      .filter(({ klyuch }) => n.includes(klyuch))
+      .sort((a, b) => b.klyuch.length - a.klyuch.length)[0]?.s;
+    return slug ? ekrany.find((k) => k.slug === slug) || null : null;
   }
 
   // Определялось глазами — записано полным именем файла
@@ -293,8 +302,16 @@ async function obrabotat(file) {
     // Первый экран: фон не режется, он и есть кадр
     if (!SUHO) {
       mkdirSync(HERO, { recursive: true });
-      await sharp(file).resize(1680, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(join(HERO, `${cel.slug}-1680.jpg`));
-      await sharp(file).resize(900, null, { withoutEnlargement: true }).jpeg({ quality: 84 }).toFile(join(HERO, `${cel.slug}-900.jpg`));
+      /*
+       * Первый экран — самая тяжёлая картинка на сайте и первое, что грузит
+       * телефон. На качестве 86 экраны выходили по 357 КБ, вдвое тяжелее
+       * «Ионыча»; на 72 вес сходится с ним, а разницы на фотографии с
+       * плёночным зерном и мягким светом не видно.
+       *
+       * mozjpeg даёт те же 72 заметно меньшим весом.
+       */
+      await sharp(file).resize(1680, null, { withoutEnlargement: true }).jpeg({ quality: 72, mozjpeg: true }).toFile(join(HERO, `${cel.slug}-1680.jpg`));
+      await sharp(file).resize(900, null, { withoutEnlargement: true }).jpeg({ quality: 72, mozjpeg: true }).toFile(join(HERO, `${cel.slug}-900.jpg`));
     }
     return { imya, kuda: `hero/${cel.slug}-1680.jpg и -900.jpg`, chto: cel.title };
   }

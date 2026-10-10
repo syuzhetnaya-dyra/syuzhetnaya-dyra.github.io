@@ -7,7 +7,7 @@
 https://syuzhetnaya-dyra.github.io/heroes/cut/ionych__starcev.webp
 
 Файлы:
-  agafya.txt — Агафью Пшеницыну
+  agafya.txt — Агафьи Пшеницыной
   zakhar.txt — Захара
   tarantyev.txt — Михея Тарантьева
   gosti.txt — гостей Обломова — Волкова, Судьбинского, Пенкина и Алексеева

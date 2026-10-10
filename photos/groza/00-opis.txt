@@ -7,14 +7,14 @@
 https://syuzhetnaya-dyra.github.io/heroes/cut/ionych__starcev.webp
 
 Файлы:
-  katerina.txt — Катерину Кабанову
-  kabanikha.txt — Марфу Игнатьевну Кабанову (Кабаниху)
+  katerina.txt — Катерины Кабановой
+  kabanikha.txt — Марфы Игнатьевны Кабановой (Кабанихи)
   tikhon.txt — Тихона Кабанова
   boris.txt — Бориса Григорьевича
   dikoy.txt — Савёла Прокофьевича Дикого
-  varvara.txt — Варвару
+  varvara.txt — Варвары
   kuligin.txt — Кулигина
-  kudryash.txt — Ваню Кудряша
+  kudryash.txt — Вани Кудряша
 
 Что подтверждено текстом и чего в тексте нет — в конце каждого файла
 не пишется: промт должен вставляться как есть. Разбор по каждому —

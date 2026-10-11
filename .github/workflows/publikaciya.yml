@@ -53,13 +53,12 @@ jobs:
       - name: Собрать сайт
         run: npm run build
         env:
+          SITE_URL: https://syuzhetnaya-dyra.github.io
           # Ключ выпуска шифрует платные страницы. Он не лежит в
           # репозитории — только здесь, секретом. Если секрета нет,
           # сборка НАРОЧНО падает: выложить платное в открытом виде
           # хуже, чем не выложить ничего.
           KLYUCH_VYPUSKA: ${{ secrets.KLYUCH_VYPUSKA }}
-        env:
-          SITE_URL: https://syuzhetnaya-dyra.github.io
 
       - uses: actions/upload-pages-artifact@v3
         with:

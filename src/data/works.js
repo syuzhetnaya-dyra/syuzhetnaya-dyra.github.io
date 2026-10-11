@@ -156,7 +156,7 @@ export const works = [
     cards: 5,
     minor: 1,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'gospodin-iz-san-francisco',

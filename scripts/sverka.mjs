@@ -66,6 +66,13 @@ const RABOTY = [
     syroy: 'chelovek-v-futlyare.raw.txt',
     chisto: 'chelovek-v-futlyare.txt',
   },
+  {
+    slug: 'starukha-izergil',
+    dannye: 'src/data/starukha-izergil.js',
+    karty: (m) => m.cards,
+    syroy: 'starukha-izergil.raw.txt',
+    chisto: 'starukha-izergil.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───
@@ -125,7 +132,10 @@ async function sverit(r) {
   // Метка главы бывает римской («IV») или составной («1.9» — часть первая,
   // глава девятая): у «Обломова» главы нумеруются внутри каждой части
   // заново, и «глава 9» без части — это четыре разных места в книге.
-  const kuski = tekst.split(/^==\s*([IVXLC]+|\d+(?:\.\d+){0,2})\s*==\s*$/m);
+  // Знаков равенства бывает и два, и четыре: это уровень заголовка на
+  // Викитеке, а не часть метки. Под номер подходит только римская цифра
+  // или составной номер, поэтому «== Примечания ==» сюда не попадёт.
+  const kuski = tekst.split(/^=+\s*([IVXLC]+|\d+(?:\.\d+){0,2})\s*=+\s*$/m);
   for (let i = 1; i < kuski.length; i += 2) glavy.set(kuski[i], kuski[i + 1]);
   if (!glavy.size) return { slug: r.slug, bedy: ['в тексте не нашлось ни одной главы вида «== I =='] };
 
@@ -183,10 +193,14 @@ async function sverit(r) {
       // проверять нечего, цитата может быть найдена только здесь.
       if (normGlavy.size === 1) continue;
 
+      // «часть I» — это та же метка «I», только названная по-человечески:
+      // у «Старухи Изергиль» деление на части, а не на главы, и писать в
+      // карточке голое «I» значило бы называть часть главой.
       const slova = String(row.chapter || '');
+      const rimskie = slova.match(/\b[IVXLC]+\b/g);
       const zayavleny = /\d/.test(slova)
         ? [(slova.match(/\d+/g) || []).join('.')]
-        : slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
+        : rimskie || slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
       if (!zayavleny.length) bedy.push(`${gde}: не указана глава`);
       else if (!zayavleny.includes(najdenaV)) {
         bedy.push(`${gde}: заявлена глава ${row.chapter}, а цитата в главе ${najdenaV}`);

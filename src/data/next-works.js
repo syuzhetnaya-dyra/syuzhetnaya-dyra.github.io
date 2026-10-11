@@ -13,21 +13,39 @@
  * id уходит в имя цели Метрики (vote-<id>). Менять его у уже собиравшего
  * голоса произведения нельзя: статистика по старому имени осиротеет.
  */
-export const nextWorks = [
-  { id: 'groza', title: 'Гроза', author: 'Островский', kind: 'драма' },
-  { id: 'otcy', title: 'Отцы и дети', author: 'Тургенев', kind: 'роман' },
-  { id: 'oblomov', title: 'Обломов', author: 'Гончаров', kind: 'роман' },
+import { sobrannye } from './all.js';
+
+const vse = [
+  { id: 'groza', slug: 'groza', title: 'Гроза', author: 'Островский', kind: 'драма' },
+  { id: 'otcy', slug: 'otcy-i-deti', title: 'Отцы и дети', author: 'Тургенев', kind: 'роман' },
+  { id: 'oblomov', slug: 'oblomov', title: 'Обломов', author: 'Гончаров', kind: 'роман' },
   {
     id: 'prestuplenie',
+    slug: 'prestuplenie-i-nakazanie',
     title: 'Преступление и наказание',
     author: 'Достоевский',
     kind: 'роман',
   },
-  { id: 'voyna', title: 'Война и мир', author: 'Толстой', kind: 'роман-эпопея' },
-  { id: 'vishnevyi-sad', title: 'Вишнёвый сад', author: 'Чехов', kind: 'драма' },
-  { id: 'mertvye-dushi', title: 'Мёртвые души', author: 'Гоголь', kind: 'поэма' },
-  { id: 'master', title: 'Мастер и Маргарита', author: 'Булгаков', kind: 'роман' },
+  { id: 'voyna', slug: 'voyna-i-mir', title: 'Война и мир', author: 'Толстой', kind: 'роман-эпопея' },
+  { id: 'vishnevyi-sad', slug: 'vishnevyy-sad', title: 'Вишнёвый сад', author: 'Чехов', kind: 'драма' },
+  { id: 'mertvye-dushi', slug: null, title: 'Мёртвые души', author: 'Гоголь', kind: 'поэма' },
+  { id: 'master', slug: null, title: 'Мастер и Маргарита', author: 'Булгаков', kind: 'роман' },
 ];
+
+/*
+ * Разобранное из опроса выпадает само.
+ *
+ * Иначе ученик, только что закончивший «Грозу», получал предложение
+ * проголосовать за «Грозу» — и это не косметика: такой голос portит
+ * рейтинг, ради которого опрос и сделан.
+ *
+ * Поэтому у каждой строки два ключа. id уходит в имя цели Метрики и не
+ * меняется никогда: переименовать его у произведения, уже собиравшего
+ * голоса, значит осиротить статистику. slug — настоящий адрес на сайте,
+ * по нему и проверяется, собрано произведение или нет. slug: null — то,
+ * чего в базе пока нет вовсе.
+ */
+export const nextWorks = vse.filter((w) => !w.slug || !sobrannye.includes(w.slug));
 
 /*
  * Адрес формы, где можно оставить контакт. Пусто — кнопки нет.

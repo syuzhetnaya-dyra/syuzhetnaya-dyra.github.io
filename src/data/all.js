@@ -20,6 +20,7 @@ import * as futlyar from './chelovek-v-futlyare.js';
 import * as izergil from './starukha-izergil.js';
 import * as sad from './vishnevyy-sad.js';
 import * as dno from './na-dne.js';
+import * as denisovich from './odin-den-ivana-denisovicha.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -103,6 +104,11 @@ export const dataBySlug = {
     warmup: oblomov.warmup || [],
     matching: oblomov.matching || [],
     terms: oblomov.terms || [],
+  }),
+  'odin-den-ivana-denisovicha': sobrat('odin-den-ivana-denisovicha', denisovich, {
+    warmup: denisovich.warmup || [],
+    matching: denisovich.matching || [],
+    terms: denisovich.terms || [],
   }),
   'na-dne': sobrat('na-dne', dno, {
     warmup: dno.warmup || [],

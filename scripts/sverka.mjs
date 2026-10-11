@@ -103,6 +103,15 @@ const RABOTY = [
     syroy: 'na-dne.raw.txt',
     chisto: 'na-dne.txt',
   },
+  {
+    slug: 'odin-den-ivana-denisovicha',
+    // Солженицын под авторским правом: текст только локально, в private/
+    zakrytoe: true,
+    dannye: 'src/data/odin-den-ivana-denisovicha.js',
+    karty: (m) => m.cards,
+    syroy: 'odin-den-ivana-denisovicha.raw.txt',
+    chisto: 'odin-den-ivana-denisovicha.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───

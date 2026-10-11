@@ -234,7 +234,7 @@ export const works = [
     cards: 7,
     minor: 0,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'voyna-i-mir',

@@ -4521,3 +4521,49 @@ body:not([data-screen='title']) .hdr {
     transition: none;
   }
 }
+
+/* Список мессенджеров: пока продажа ручная, это и есть кнопка покупки.
+   Первый — основной, остальные тише: выбор из трёх равновеликих кнопок
+   тормозит сильнее, чем одна с запасными под ней. */
+.zamok__kak {
+  margin: 0 0 12px;
+  font-family: var(--micro);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.zamok__svyaz {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.zamok__svyaz li + li .zamok__kupit {
+  color: var(--wine);
+  background-color: transparent;
+  border: 1px solid var(--hair);
+  min-height: 46px;
+  padding: 12px 16px;
+  font-size: 0.98rem;
+}
+
+.zamok__svyaz li + li .zamok__kupit:hover {
+  border-color: var(--wine);
+  background-color: transparent;
+}
+
+/* Ник, который нельзя сделать ссылкой: показываем, чтобы переписали */
+.zamok__kupit--tiho {
+  display: block;
+  cursor: text;
+  user-select: text;
+}
+
+.zamok__nik {
+  opacity: 0.75;
+  font-family: var(--micro);
+  font-size: 0.86em;
+  white-space: nowrap;
+}

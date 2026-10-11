@@ -130,7 +130,7 @@ export const works = [
     cards: 11,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'prestuplenie-i-nakazanie',

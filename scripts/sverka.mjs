@@ -96,6 +96,13 @@ const RABOTY = [
     syroy: 'vishnevyy-sad.raw.txt',
     chisto: 'vishnevyy-sad.txt',
   },
+  {
+    slug: 'na-dne',
+    dannye: 'src/data/na-dne.js',
+    karty: (m) => m.cards,
+    syroy: 'na-dne.raw.txt',
+    chisto: 'na-dne.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───

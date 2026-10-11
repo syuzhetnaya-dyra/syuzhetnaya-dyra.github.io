@@ -14,6 +14,7 @@
 import * as ionych from './ionych.js';
 import * as otcyIDeti from './otcy-i-deti.js';
 import * as oblomov from './oblomov.js';
+import * as groza from './groza.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -80,6 +81,11 @@ export const dataBySlug = {
     warmup: oblomov.warmup || [],
     matching: oblomov.matching || [],
     terms: oblomov.terms || [],
+  }),
+  groza: sobrat('groza', groza, {
+    warmup: groza.warmup || [],
+    matching: groza.matching || [],
+    terms: groza.terms || [],
   }),
   'otcy-i-deti': sobrat('otcy-i-deti', otcyIDeti, {
     warmup: otcyIDeti.warmup || [],

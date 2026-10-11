@@ -18,6 +18,7 @@
 // Произведение узнаётся по слову в имени файла
 export const PROIZVEDENIYA = [
   ['отцы и дети', 'otcy-i-deti'],
+  ['гроза', 'groza'],
   ['обломов', 'oblomov'],
   ['война и мир', 'voyna-i-mir'],
   ['вишневый сад', 'vishnevyy-sad'],
@@ -126,6 +127,7 @@ export const GEROI = {
   ],
   'starukha-izergil': [
     ['изергиль горький', 'izergil'],
+    ['природа', 'priroda'],
     ['ларра', 'larra'],
     ['данко', 'danko'],
     ['любимчики', 'lyubovniki'],
@@ -155,6 +157,16 @@ export const GEROI = {
     ['женщины в очереди', 'zhenshchiny-v-ocheredi'],
     ['сын героини', 'syn'],
     ['героиня', 'geroinya'],
+  ],
+  groza: [
+    ['катерина', 'katerina'],
+    ['кабаниха', 'kabanikha'],
+    ['тихон', 'tikhon'],
+    ['борис', 'boris'],
+    ['дикой', 'dikoy'],
+    ['варвара', 'varvara'],
+    ['кулигин', 'kuligin'],
+    ['кудряш', 'kudryash'],
   ],
   'odin-den-ivana-denisovicha': [
     ['шухов', 'shukhov'],
@@ -237,4 +249,9 @@ export const PO_GLAZAM = {
   'олег дон.png': ['molodaya-gvardiya', 'oleg-koshevoy'],
   // «ГВАРДИЯ 12»: не «Молодая гвардия», а двенадцать красногвардейцев Блока.
   'гвардия 12.png': ['dvenadtsat', 'dvenadtsat-krasnoarmeytsev'],
+
+  // Гитара и ноты у разрушенной стены, террикон и копёр шахты за спиной:
+  // гитара есть только в промте Третьякевича, и это единственная карточка
+  // «Молодой гвардии», которой ещё не было.
+  'молодая гвардия фадеева.png': ['molodaya-gvardiya', 'viktor-tretyakevich'],
 };

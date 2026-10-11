@@ -5,7 +5,8 @@ import '../styles/world.css';
 import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
-import { platno, METKA_NACHALO, METKA_KONEC } from '../data/dostup.js';
+import { platno, METKA_NACHALO, METKA_KONEC, SSYLKA_OPLATY } from '../data/dostup.js';
+import { to } from '../scripts/paths.js';
 
 const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
 
@@ -96,11 +97,26 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
           <form class="zamok" data-zamok-forma hidden>
             <p class="zamok__title">Нужен код доступа</p>
             <p class="zamok__lead">
-              «Ионыч» разобран целиком и открыт всем — посмотрите его, если ещё не видели.
-              Остальные произведения открываются кодом, который приходит после оплаты.
+              {
+                SSYLKA_OPLATY
+                  ? 'Эта часть открывается кодом, который приходит после оплаты. «Ионыч» разобран целиком и открыт всем — посмотрите его, если ещё не видели.'
+                  : 'Продажа доступа пока не открыта — кода ещё нельзя купить, и это честнее сказать прямо. А «Ионыч» разобран целиком и открыт всем: там тот же разбор, те же цитаты и те же задания.'
+              }
             </p>
+
+            {
+              SSYLKA_OPLATY ? (
+                <a class="zamok__kupit" href={SSYLKA_OPLATY} rel="noopener">
+                  Получить код
+                </a>
+              ) : (
+                <a class="zamok__kupit" href={to('/ionych/')}>
+                  Открыть «Ионыча»
+                </a>
+              )
+            }
             <label class="zamok__pole">
-              <span class="zamok__podpis">Код доступа</span>
+              <span class="zamok__podpis">Уже есть код?</span>
               <input
                 type="text"
                 inputmode="latin"

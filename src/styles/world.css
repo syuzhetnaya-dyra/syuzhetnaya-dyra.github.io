@@ -4412,9 +4412,14 @@ body:not([data-screen='title']) .hdr {
   margin-bottom: 18px;
 }
 
+/* Подпись к полю она же и разделитель: отдельный заголовок над ней
+   говорил бы ровно то же самое второй раз. */
 .zamok__podpis {
   display: block;
-  margin-bottom: 7px;
+  margin-top: 30px;
+  margin-bottom: 9px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hair);
   font-family: var(--micro);
   font-size: 0.72rem;
   font-weight: 600;
@@ -4444,21 +4449,44 @@ body:not([data-screen='title']) .hdr {
   outline-offset: 2px;
 }
 
+/* Главное действие — выйти из тупика: купить код или уйти читать
+   «Ионыча». Ввод кода нужен лишь тем, у кого он уже есть, и потому
+   набран тише. Если поменять их местами, человек без кода упрётся
+   в поле, которое ему нечем заполнить. */
+.zamok__kupit {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 15px 20px;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--paper);
+  background-color: var(--wine);
+  transition: background-color 0.18s ease;
+}
+
+.zamok__kupit:hover {
+  background-color: var(--wine-deep);
+}
+
 .zamok__knopka {
   width: 100%;
   min-height: 52px;
   padding: 14px 20px;
   font-family: var(--display);
   font-size: 1.05rem;
-  color: var(--paper);
-  background-color: var(--wine);
-  border: 0;
+  color: var(--wine);
+  background-color: transparent;
+  border: 1px solid var(--wine);
   cursor: pointer;
-  transition: background-color 0.18s ease;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .zamok__knopka:hover {
-  background-color: var(--wine-deep);
+  color: var(--paper);
+  background-color: var(--wine);
 }
 
 .zamok[data-state='ждём'] .zamok__knopka {
@@ -4488,7 +4516,8 @@ body:not([data-screen='title']) .hdr {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .zamok__knopka {
+  .zamok__knopka,
+  .zamok__kupit {
     transition: none;
   }
 }

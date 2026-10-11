@@ -5,7 +5,16 @@ import '../styles/world.css';
 import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
+import { platno, METKA_NACHALO, METKA_KONEC } from '../data/dostup.js';
+
 const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
+
+/*
+ * Замок ставится только на страницах платного произведения и только там,
+ * где есть что закрывать. Главная и список произведений остаются открытыми
+ * всегда: человек должен видеть, что он покупает.
+ */
+const podZamkom = Boolean(work) && platno(work, screen);
 // На главной заголовок и есть «Сюжетная дыра» — приписывать его второй раз
 // значит выдать вкладку «Сюжетная дыра — Сюжетная дыра».
 const pageTitle = title === 'Сюжетная дыра' ? title : `${title} — Сюжетная дыра`;
@@ -78,7 +87,40 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
   </head>
   <body data-screen={screen} data-work={work} data-heroes={heroes || undefined}>
     <div class="stage">
+      {podZamkom && <Fragment set:html={METKA_NACHALO} />}
       <slot />
+      {podZamkom && <Fragment set:html={METKA_KONEC} />}
+
+      {
+        podZamkom && (
+          <form class="zamok" data-zamok-forma hidden>
+            <p class="zamok__title">Нужен код доступа</p>
+            <p class="zamok__lead">
+              «Ионыч» разобран целиком и открыт всем — посмотрите его, если ещё не видели.
+              Остальные произведения открываются кодом, который приходит после оплаты.
+            </p>
+            <label class="zamok__pole">
+              <span class="zamok__podpis">Код доступа</span>
+              <input
+                type="text"
+                inputmode="latin"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                placeholder="XXXX-XXXX-XXXX"
+                aria-describedby="zamok-beda"
+              />
+            </label>
+            <button class="zamok__knopka" type="submit">
+              Открыть
+            </button>
+            <p class="zamok__beda" id="zamok-beda" data-zamok-beda hidden />
+            <p class="zamok__snoska">
+              Код вводится один раз на этом устройстве. Мы не спрашиваем ни почту, ни имя.
+            </p>
+          </form>
+        )
+      }
     </div>
 
     {/* Холст только там, где лепестки играют: на страницах заданий пустой
@@ -88,6 +130,11 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
     <script>
       import { mountSlideNav } from '../scripts/nav.js';
       import { mountMetrika } from '../scripts/metrika.js';
+      import { mountZamok } from '../scripts/zamok.js';
+
+      // Замок снимается один раз за загрузку, а не на каждом astro:page-load:
+      // он сам это событие и рассылает, когда содержимое расшифровано.
+      mountZamok();
 
       // astro:page-load срабатывает и на первой загрузке, и после каждого
       // перехода — модульный скрипт сам по себе второй раз не выполнится.

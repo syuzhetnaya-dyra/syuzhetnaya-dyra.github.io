@@ -4376,3 +4376,119 @@ body:not([data-screen='title']) .hdr {
     display: none;
   }
 }
+
+/* ─── Замок: ввод кода доступа ─────────────────────────────────────────
+   Это первое, что видит неоплативший, и выглядеть оно должно не как
+   заглушка, а как часть книги: та же бумага, те же шрифты, та же рамка
+   волоском. Поэтому ни серых боксов, ни «доступ запрещён». */
+
+.zamok {
+  max-width: 34rem;
+  margin: clamp(48px, 14vh, 140px) auto;
+  padding: clamp(24px, 6vw, 44px);
+  background-color: var(--paper);
+  border: 1px solid var(--hair);
+  box-shadow: 0 1px 0 rgba(35, 27, 24, 0.04);
+}
+
+.zamok__title {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 5.2vw, 1.9rem);
+  line-height: 1.15;
+  color: var(--wine);
+}
+
+.zamok__lead {
+  margin: 0 0 24px;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.zamok__pole {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.zamok__podpis {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--micro);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.zamok input {
+  width: 100%;
+  padding: 13px 14px;
+  font-family: var(--micro);
+  /* Код диктуют и переписывают: крупно, в разрядку, одним регистром */
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background-color: var(--ivory);
+  border: 1px solid var(--hair);
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.zamok input:focus-visible {
+  outline: 2px solid var(--gold-text);
+  outline-offset: 2px;
+}
+
+.zamok__knopka {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 20px;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--paper);
+  background-color: var(--wine);
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.zamok__knopka:hover {
+  background-color: var(--wine-deep);
+}
+
+.zamok[data-state='ждём'] .zamok__knopka {
+  /* Разворот ключа занимает заметное время: без отклика человек жмёт ещё раз */
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.zamok[data-state='ждём'] .zamok__knopka::after {
+  content: '…';
+}
+
+.zamok__beda {
+  margin: 14px 0 0;
+  font-family: var(--body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--mark-red);
+}
+
+.zamok__snoska {
+  margin: 20px 0 0;
+  font-family: var(--micro);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zamok__knopka {
+    transition: none;
+  }
+}

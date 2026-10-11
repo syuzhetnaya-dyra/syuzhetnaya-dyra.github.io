@@ -52,7 +52,7 @@ export const works = [
     cards: 7,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'groza',

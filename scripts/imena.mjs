@@ -18,6 +18,7 @@
 // Произведение узнаётся по слову в имени файла
 export const PROIZVEDENIYA = [
   ['отцы и дети', 'otcy-i-deti'],
+  ['обломов', 'oblomov'],
   ['война и мир', 'voyna-i-mir'],
   ['вишневый сад', 'vishnevyy-sad'],
   ['вишнёвый сад', 'vishnevyy-sad'],
@@ -50,9 +51,14 @@ export const GEROI = {
     ['павел кирсанов', 'pavel-petrovich'],
   ],
   oblomov: [
-    ['oblomov__oblomov', 'oblomov'],
-    ['oblomov__shtolts', 'shtolts'],
-    ['oblomov__olga', 'olga'],
+    ['агафья', 'agafya'],
+    ['пшеницына', 'agafya'],
+    ['захар', 'zakhar'],
+    ['тарантьев', 'tarantyev'],
+    ['гости', 'gosti'],
+    ['штольц', 'shtolts'],
+    ['ольга', 'olga'],
+    ['ильич', 'oblomov'],
   ],
   'vishnevyy-sad': [
     ['любовь', 'ranevskaya'],

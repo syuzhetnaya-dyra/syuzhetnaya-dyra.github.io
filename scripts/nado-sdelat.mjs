@@ -12,10 +12,11 @@
  *
  *   node scripts/nado-sdelat.mjs
  */
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, copyFileSync, mkdirSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
+import { zapisat } from './tekst.mjs';
 
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PHOTOS = join(KORENb, 'photos');
@@ -51,7 +52,7 @@ for (const papka of readdirSync(PHOTOS)) {
     if (existsSync(join(CUT, `${papka}__${id}.webp`))) continue;
     const kto = imena[`${papka}__${id}`] || id;
     const imya = `${nazvaniya[papka] || papka} — ${kto}.txt`.replace(/[\\/:*?"<>|]/g, '-');
-    writeFileSync(join(STOL, imya), readFileSync(join(PHOTOS, papka, f)));
+    copyFileSync(join(PHOTOS, papka, f), join(STOL, imya));
     spisok.push(imya);
   }
 }
@@ -62,13 +63,13 @@ for (const f of readdirSync(join(PHOTOS, 'glavnye-ekrany'))) {
   const slug = f.replace(/\.txt$/, '');
   if (existsSync(join(HERO, `${slug}-1680.jpg`))) continue;
   const imya = `ЭКРАН — ${nazvaniya[slug] || slug}.txt`.replace(/[\\/:*?"<>|]/g, '-');
-  writeFileSync(join(STOL, imya), readFileSync(join(PHOTOS, 'glavnye-ekrany', f)));
+  copyFileSync(join(PHOTOS, 'glavnye-ekrany', f), join(STOL, imya));
   spisok.push(imya);
 }
 
 spisok.sort((a, b) => a.localeCompare(b, 'ru'));
 
-writeFileSync(
+zapisat(
   join(STOL, '00-ЧИТАЙ-МЕНЯ.txt'),
   [
     `ОСТАЛОСЬ СДЕЛАТЬ: ${spisok.length}`,

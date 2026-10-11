@@ -12,9 +12,10 @@
  *
  *   node scripts/promty.mjs
  */
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, mkdirSync, readdirSync, rmSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { zapisat } from './tekst.mjs';
 
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PHOTOS = join(KORENb, 'photos');
@@ -53,13 +54,13 @@ for (const fayl of readdirSync(PHOTOS).filter((f) => f.endsWith('.md') && !f.sta
     const nazvanie = zagolovok.replace(/^##\s+/, '').replace(/^[a-z0-9-]+__[a-z0-9-]+\s*:\s*/i, '');
 
     // CRLF: файл открывают двойным щелчком, в том числе в Блокноте
-    writeFileSync(join(papka, `${imya}.txt`), blok[1].trim().replace(/\n/g, '\r\n') + '\r\n', 'utf8');
+    zapisat(join(papka, `${imya}.txt`), blok[1].trim().replace(/\n/g, '\r\n') + '\r\n', 'utf8');
     spisok.push(`${imya}.txt — ${nazvanie}`);
     vsego += 1;
   }
 
   // Опись рядом, чтобы было видно, какой файл к кому относится
-  writeFileSync(
+  zapisat(
     join(papka, '00-opis.txt'),
     [
       `Промты для картинок: ${slug}`,

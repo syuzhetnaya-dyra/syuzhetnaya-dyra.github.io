@@ -10,10 +10,11 @@
  *
  *   node scripts/na-stol.mjs
  */
-import { readdirSync, mkdirSync, copyFileSync, rmSync, existsSync, writeFileSync, statSync } from 'node:fs';
+import { readdirSync, mkdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
+import { zapisat } from './tekst.mjs';
 
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PHOTOS = join(KORENb, 'photos');
@@ -44,7 +45,7 @@ for (const p of papki) {
   otchet.push(`${imya}: ${fayly.filter((f) => !f.startsWith('00-')).length}`);
 }
 
-writeFileSync(
+zapisat(
   join(STOL, '00-ЧИТАЙ-МЕНЯ.txt'),
   [
     'ПРОМТЫ ДЛЯ КАРТИНОК',

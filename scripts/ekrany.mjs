@@ -18,9 +18,10 @@
  *
  *   node scripts/ekrany.mjs
  */
-import { writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { zapisat } from './tekst.mjs';
 
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(KORENb, 'photos', 'glavnye-ekrany');
@@ -291,11 +292,11 @@ mkdirSync(OUT, { recursive: true });
 
 const opis = [];
 for (const r of RABOTY) {
-  writeFileSync(join(OUT, `${r.slug}.txt`), SHABLON(r).replace(/\n/g, '\r\n'), 'utf8');
+  zapisat(join(OUT, `${r.slug}.txt`), SHABLON(r).replace(/\n/g, '\r\n'), 'utf8');
   opis.push(`${r.slug}.txt — ${r.title} (${r.author})${r.osobo ? '  ⚠ особые ограничения' : ''}`);
 }
 
-writeFileSync(
+zapisat(
   join(OUT, '00-opis.txt'),
   [
     'ГЛАВНЫЕ ЭКРАНЫ ПРОИЗВЕДЕНИЙ',

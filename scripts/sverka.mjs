@@ -89,6 +89,13 @@ const RABOTY = [
     syroy: 'starukha-izergil.raw.txt',
     chisto: 'starukha-izergil.txt',
   },
+  {
+    slug: 'vishnevyy-sad',
+    dannye: 'src/data/vishnevyy-sad.js',
+    karty: (m) => m.cards,
+    syroy: 'vishnevyy-sad.raw.txt',
+    chisto: 'vishnevyy-sad.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───

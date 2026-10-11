@@ -18,6 +18,7 @@ import * as groza from './groza.js';
 import * as student from './student.js';
 import * as futlyar from './chelovek-v-futlyare.js';
 import * as izergil from './starukha-izergil.js';
+import * as sad from './vishnevyy-sad.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -101,6 +102,11 @@ export const dataBySlug = {
     warmup: oblomov.warmup || [],
     matching: oblomov.matching || [],
     terms: oblomov.terms || [],
+  }),
+  'vishnevyy-sad': sobrat('vishnevyy-sad', sad, {
+    warmup: sad.warmup || [],
+    matching: sad.matching || [],
+    terms: sad.terms || [],
   }),
   'starukha-izergil': sobrat('starukha-izergil', izergil, {
     warmup: izergil.warmup || [],

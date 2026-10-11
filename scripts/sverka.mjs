@@ -22,6 +22,22 @@ import { dirname, join } from 'node:path';
 const KORENb = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = join(KORENb, 'lithero-content', 'sources');
 
+/*
+ * Закрытые тексты.
+ *
+ * Ахматова, Шолохов, Солженицын, Фадеев защищены авторским правом.
+ * Цитировать их в учебных целях закон разрешает — с именем автора, с
+ * источником и в объёме, оправданном целью. А вот положить книгу целиком
+ * в этот репозиторий нельзя: репозиторий публичный, он и есть сайт, и
+ * полный текст в нём — не цитата, а публикация всего произведения.
+ *
+ * Поэтому такие тексты лежат в sources/private/, закрытой от git. Сверка
+ * берёт их оттуда, если они есть на машине, и работает как обычно. Если
+ * их нет — она говорит об этом вслух и не делает вида, что цитаты
+ * проверены.
+ */
+const ZAKRYTYE = join(SOURCES, 'private');
+
 // Произведение → откуда берутся карточки и где лежит текст.
 const RABOTY = [
   {
@@ -122,7 +138,13 @@ const norm = (s) =>
 // ─── Сверка одного произведения ───
 
 async function sverit(r) {
-  const syroyPut = join(SOURCES, r.syroy);
+  // У закрытого произведения текст ищется только в непубликуемой папке:
+  // если он вдруг окажется в общей, это ошибка, а не запасной путь.
+  const syroyPut = r.zakrytoe ? join(ZAKRYTYE, r.syroy) : join(SOURCES, r.syroy);
+
+  if (!existsSync(syroyPut) && r.zakrytoe) {
+    return { slug: r.slug, nesvereno: true, bedy: [] };
+  }
   if (!existsSync(syroyPut)) {
     return { slug: r.slug, bedy: [`нет текста источника: lithero-content/sources/${r.syroy}`] };
   }
@@ -139,9 +161,12 @@ async function sverit(r) {
   for (let i = 1; i < kuski.length; i += 2) glavy.set(kuski[i], kuski[i + 1]);
   if (!glavy.size) return { slug: r.slug, bedy: ['в тексте не нашлось ни одной главы вида «== I =='] };
 
-  // Чистый текст кладём рядом: по нему удобно искать руками
+  // Чистый текст кладём рядом: по нему удобно искать руками. У закрытого
+  // произведения «рядом» значит в той же непубликуемой папке — иначе
+  // книга, которую нельзя выкладывать, легла бы в репозиторий начисто
+  // переписанной, и запрет обошёл бы сам себя.
   writeFileSync(
-    join(SOURCES, r.chisto),
+    join(r.zakrytoe ? ZAKRYTYE : SOURCES, r.chisto),
     [...glavy].map(([n, v]) => `== ${n} ==\n${v.trim()}`).join('\n\n') + '\n',
     'utf8'
   );
@@ -249,9 +274,18 @@ async function sverit(r) {
 // ─── Запуск ───
 
 let vsegoBed = 0;
+const nesvereny = [];
 for (const r of RABOTY) {
   const it = await sverit(r);
   console.log(`\n── ${it.slug} ──`);
+
+  if (it.nesvereno) {
+    nesvereny.push(r);
+    console.log(`НЕ СВЕРЕНО: текст защищён авторским правом и в репозитории не лежит.`);
+    console.log(`Положите его в lithero-content/sources/private/${r.syroy} — и сверка пройдёт как обычно.`);
+    continue;
+  }
+
   if (it.citat !== undefined) {
     console.log(`глав ${it.glav} · цитат ${it.citat} · найдено дословно ${it.najdeno}`);
   }
@@ -270,5 +304,17 @@ for (const r of RABOTY) {
 if (vsegoBed) {
   console.error(`\nсверка не прошла: ${vsegoBed} бед`);
   process.exit(1);
+}
+
+/*
+ * «Пройдена» и «пройдена целиком» — разные вещи, и разница должна быть
+ * видна с одного взгляда. Иначе непроверенные цитаты защищённых авторов
+ * однажды уедут на сайт под тем же зелёным словом, что и проверенные.
+ */
+if (nesvereny.length) {
+  console.log(`\nсверка пройдена по доступным текстам`);
+  console.log(`НЕ ПРОВЕРЕНО произведений: ${nesvereny.length} — ${nesvereny.map((r) => r.slug).join(', ')}`);
+  console.log(`Их цитаты держатся только на том, что их сверил человек.`);
+  process.exit(0);
 }
 console.log('\nсверка пройдена');

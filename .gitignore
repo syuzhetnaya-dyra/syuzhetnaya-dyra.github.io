@@ -3,3 +3,7 @@ dist/
 .astro/
 .impeccable/review/
 входящие-картинки/
+
+# Защищённые авторским правом тексты: цитировать можно, выкладывать нельзя.
+# Лежат только локально, сверка берёт их отсюда. См. scripts/sverka.mjs.
+lithero-content/sources/private/

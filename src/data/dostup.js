@@ -91,9 +91,6 @@ export const SSYLKA_OPLATY = '';
 export const KONTAKTY = [
   { imya: 'Телеграм', nik: '@nastya_veb_prod', ssylka: 'https://t.me/nastya_veb_prod' },
   { imya: 'ВКонтакте', nik: 'nastya_prod', ssylka: 'https://vk.com/nastya_prod' },
-  // У MAX адреса профилей я подтвердить не смог, а нерабочая кнопка хуже
-  // написанного имени: ник показывается текстом, его копируют руками.
-  { imya: 'MAX', nik: 'nastiixx' },
 ];
 
 /*

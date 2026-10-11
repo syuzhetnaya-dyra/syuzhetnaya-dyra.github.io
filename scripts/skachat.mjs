@@ -35,6 +35,37 @@ const RABOTY = {
     stranica: (chast, glava) => `Обломов (Гончаров)/Часть ${chast}/Глава ${glava}`,
     izdanie: 'ru.wikisource.org · И. А. Гончаров. Обломов',
   },
+
+  /*
+   * Короткая вещь лежит на Викитеке одной страницей. Метки глав тогда
+   * ставить не из чего, и ставить их незачем: вся вещь — одно место, и
+   * ссылка «глава такая-то» только мешала бы.
+   */
+  'chelovek-v-futlyare': {
+    listy: [{ metka: '1', imya: 'Человек в футляре (Чехов)', podpis: 'рассказ целиком' }],
+    izdanie: 'ru.wikisource.org · А. П. Чехов. Человек в футляре',
+  },
+  student: {
+    listy: [{ metka: '1', imya: 'Студент (Чехов)', podpis: 'рассказ целиком' }],
+    izdanie: 'ru.wikisource.org · А. П. Чехов. Студент',
+  },
+
+  /*
+   * Пьеса разложена по действиям отдельными страницами. Явления внутри
+   * размечает scripts/pyesa.mjs — уже после скачивания.
+   */
+  'vishnevyy-sad': {
+    listy: ['первое', 'второе', 'третье', 'четвёртое'].map((s, i) => ({
+      metka: String(i + 1),
+      imya: `Вишнёвый сад (Чехов)/Действие ${s}`,
+      podpis: `действие ${i + 1}`,
+    })),
+    izdanie: 'ru.wikisource.org · А. П. Чехов. Вишнёвый сад',
+  },
+  'na-dne': {
+    listy: [{ metka: '1', imya: 'На дне (Горький)/ИС 1986', podpis: 'пьеса целиком' }],
+    izdanie: 'ru.wikisource.org · М. Горький. На дне',
+  },
 };
 
 const rim = (n) => {
@@ -59,7 +90,9 @@ mkdirSync(SOURCES, { recursive: true });
  * значит часть первая, глава девятая. Одна «глава 9» без части — это
  * четыре разных места в книге.
  */
-const stranicy = r.chasti
+const stranicy = r.listy
+  ? r.listy
+  : r.chasti
   ? r.chasti.flatMap((skolko, i) =>
       Array.from({ length: skolko }, (_, j) => ({
         metka: `${i + 1}.${j + 1}`,

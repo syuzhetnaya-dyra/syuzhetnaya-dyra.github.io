@@ -104,7 +104,7 @@ export const works = [
     cards: 4,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'student',
@@ -117,7 +117,7 @@ export const works = [
     cards: 2,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'na-dne',

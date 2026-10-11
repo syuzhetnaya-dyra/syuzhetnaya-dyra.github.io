@@ -144,7 +144,7 @@ const right = card.rows.slice(half);
                       {r.quote && (
                         <blockquote class="ds-quote"><RollText text={`«${r.quote}»`} /></blockquote>
                       )}
-                      {r.quote && r.chapter && <p class="ds-ch">глава {r.chapter}</p>}
+                      {r.quote && r.chapterLabel && <p class="ds-ch">{r.chapterLabel}</p>}
                       {r.value && <p class="ds-value"><RollText text={r.value} /></p>}
                     </div>
                   </div>

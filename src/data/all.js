@@ -15,6 +15,8 @@ import * as ionych from './ionych.js';
 import * as otcyIDeti from './otcy-i-deti.js';
 import * as oblomov from './oblomov.js';
 import * as groza from './groza.js';
+import * as student from './student.js';
+import * as futlyar from './chelovek-v-futlyare.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -38,9 +40,26 @@ function sFoto(slug, card) {
   return existsSync(join(PUBLIC, put)) ? put : null;
 }
 
+/*
+ * Подпись под цитатой.
+ *
+ * «III» — это глава, и слово «глава» перед ней нужно. А «часть 1, глава 9»
+ * и «действие 1, явление 7» называют единицу сами, и приписка превращала
+ * подпись в «глава часть 1, глава 9». У пьесы глав нет вовсе, и называть
+ * явление главой — просто неверно.
+ *
+ * Поэтому слово добавляется только к голому номеру.
+ */
+function podpisGlavy(chapter) {
+  if (!chapter) return null;
+  const s = String(chapter).trim();
+  return /^[IVXLC]+$|^\d+([.,]\d+)*$/.test(s) ? `глава ${s}` : s;
+}
+
 function sobrat(slug, modul, zadaniya) {
   const cards = modul.cards.map((c, i) => ({
     ...c,
+    rows: (c.rows || []).map((r) => ({ ...r, chapterLabel: podpisGlavy(r.chapter) })),
     order: i + 1,
     // Буква для силуэта, пока снимка нет
     initial: c.name.replace(/^[^A-Za-zА-Яа-яЁё]+/, '').charAt(0).toUpperCase(),
@@ -81,6 +100,16 @@ export const dataBySlug = {
     warmup: oblomov.warmup || [],
     matching: oblomov.matching || [],
     terms: oblomov.terms || [],
+  }),
+  'chelovek-v-futlyare': sobrat('chelovek-v-futlyare', futlyar, {
+    warmup: futlyar.warmup || [],
+    matching: futlyar.matching || [],
+    terms: futlyar.terms || [],
+  }),
+  student: sobrat('student', student, {
+    warmup: student.warmup || [],
+    matching: student.matching || [],
+    terms: student.terms || [],
   }),
   groza: sobrat('groza', groza, {
     warmup: groza.warmup || [],

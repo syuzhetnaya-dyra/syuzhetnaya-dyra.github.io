@@ -52,6 +52,20 @@ const RABOTY = [
     syroy: 'groza.raw.txt',
     chisto: 'groza.txt',
   },
+  {
+    slug: 'student',
+    dannye: 'src/data/student.js',
+    karty: (m) => m.cards,
+    syroy: 'student.raw.txt',
+    chisto: 'student.txt',
+  },
+  {
+    slug: 'chelovek-v-futlyare',
+    dannye: 'src/data/chelovek-v-futlyare.js',
+    karty: (m) => m.cards,
+    syroy: 'chelovek-v-futlyare.raw.txt',
+    chisto: 'chelovek-v-futlyare.txt',
+  },
 ];
 
 // ─── Очистка вики-разметки ───
@@ -163,6 +177,12 @@ async function sverit(r) {
       // Метка главы бывает составной: «I и IV» — фраза звучит дважды.
       // «часть 1, глава 9» приводим к метке «1.9»; «I и IV» остаётся парой
       // римских. Человеку в карточке читается словами, скрипту — меткой.
+      //
+      // У короткого рассказа глав нет вовсе: весь текст — одно место, и
+      // «глава 1» в карточке была бы выдумкой. Тогда метку не проверяем:
+      // проверять нечего, цитата может быть найдена только здесь.
+      if (normGlavy.size === 1) continue;
+
       const slova = String(row.chapter || '');
       const zayavleny = /\d/.test(slova)
         ? [(slova.match(/\d+/g) || []).join('.')]

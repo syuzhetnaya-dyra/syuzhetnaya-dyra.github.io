@@ -11,6 +11,7 @@
  * имени, ни самого кода.
  */
 import { asset } from './paths.js';
+import { goal } from './metrika.js';
 
 const PAMYAT = 'sd-klyuch';
 
@@ -109,7 +110,17 @@ export async function mountZamok() {
     }
   }
 
+  /*
+   * Воронка. Без этих трёх цифр не понять, что мешает покупке: мало
+   * ли людей вообще доходит до замка, или доходят многие, а платить не
+   * идут. Пятьсот сохранений в тиктоке об этом не говорят ничего.
+   */
   forma.hidden = false;
+  goal('zamok-pokazan');
+
+  for (const knopka of forma.querySelectorAll('a.zamok__kupit')) {
+    knopka.addEventListener('click', () => goal('zamok-kupit'));
+  }
 
   forma.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -123,10 +134,12 @@ export async function mountZamok() {
       const klyuch = await klyuchPoKodu(kod);
       if (!klyuch) {
         forma.dataset.state = '';
+        goal('zamok-kod-neveren');
         skazat('Такого кода нет. Проверьте, не перепутаны ли похожие знаки.');
         return;
       }
       await raskryt(klyuch);
+      goal('zamok-otkryt');
       try {
         localStorage.setItem(PAMYAT, klyuch);
       } catch {}

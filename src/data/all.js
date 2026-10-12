@@ -21,6 +21,9 @@ import * as izergil from './starukha-izergil.js';
 import * as sad from './vishnevyy-sad.js';
 import * as dno from './na-dne.js';
 import * as denisovich from './odin-den-ivana-denisovicha.js';
+import * as sanFrancisco from './gospodin-iz-san-francisco.js';
+import * as dvenadtsat from './dvenadtsat.js';
+import * as oblako from './oblako-v-shtanakh.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -104,6 +107,21 @@ export const dataBySlug = {
     warmup: oblomov.warmup || [],
     matching: oblomov.matching || [],
     terms: oblomov.terms || [],
+  }),
+  'gospodin-iz-san-francisco': sobrat('gospodin-iz-san-francisco', sanFrancisco, {
+    warmup: sanFrancisco.warmup || [],
+    matching: sanFrancisco.matching || [],
+    terms: sanFrancisco.terms || [],
+  }),
+  'dvenadtsat': sobrat('dvenadtsat', dvenadtsat, {
+    warmup: dvenadtsat.warmup || [],
+    matching: dvenadtsat.matching || [],
+    terms: dvenadtsat.terms || [],
+  }),
+  'oblako-v-shtanakh': sobrat('oblako-v-shtanakh', oblako, {
+    warmup: oblako.warmup || [],
+    matching: oblako.matching || [],
+    terms: oblako.terms || [],
   }),
   'odin-den-ivana-denisovicha': sobrat('odin-den-ivana-denisovicha', denisovich, {
     warmup: denisovich.warmup || [],

@@ -104,6 +104,27 @@ const RABOTY = [
     chisto: 'na-dne.txt',
   },
   {
+    slug: 'oblako-v-shtanakh',
+    dannye: 'src/data/oblako-v-shtanakh.js',
+    karty: (m) => m.cards,
+    syroy: 'oblako-v-shtanakh.raw.txt',
+    chisto: 'oblako-v-shtanakh.txt',
+  },
+  {
+    slug: 'dvenadtsat',
+    dannye: 'src/data/dvenadtsat.js',
+    karty: (m) => m.cards,
+    syroy: 'dvenadtsat.raw.txt',
+    chisto: 'dvenadtsat.txt',
+  },
+  {
+    slug: 'gospodin-iz-san-francisco',
+    dannye: 'src/data/gospodin-iz-san-francisco.js',
+    karty: (m) => m.cards,
+    syroy: 'gospodin-iz-san-francisco.raw.txt',
+    chisto: 'gospodin-iz-san-francisco.txt',
+  },
+  {
     slug: 'odin-den-ivana-denisovicha',
     // Солженицын под авторским правом: текст только локально, в private/
     zakrytoe: true,
@@ -181,7 +202,28 @@ async function sverit(r) {
   // Викитеке, а не часть метки. Под номер подходит только римская цифра
   // или составной номер, поэтому «== Примечания ==» сюда не попадёт.
   const kuski = tekst.split(/^=+\s*([IVXLC]+|\d+(?:\.\d+){0,2})\s*=+\s*$/m);
-  for (let i = 1; i < kuski.length; i += 2) glavy.set(kuski[i], kuski[i + 1]);
+  /*
+   * Повторный номер — это потеря текста, а не мелочь.
+   *
+   * Скачиватель помечает всю страницу как «1», а внутри у поэмы своя
+   * первая часть, тоже «1». Вторая молча затирала первую вместе с
+   * прологом, и сверка при этом рапортовала, что всё хорошо: цитат из
+   * пропавшего куска в данных просто не было. Теперь она об этом кричит.
+   */
+  const povtory = [];
+  for (let i = 1; i < kuski.length; i += 2) {
+    if (glavy.has(kuski[i])) povtory.push(kuski[i]);
+    glavy.set(kuski[i], kuski[i + 1]);
+  }
+  if (povtory.length) {
+    return {
+      slug: r.slug,
+      bedy: [
+        `в источнике повторяются номера глав: ${[...new Set(povtory)].join(', ')}. ` +
+          `Текст первой из них потерян — поправьте разметку источника.`,
+      ],
+    };
+  }
   if (!glavy.size) return { slug: r.slug, bedy: ['в тексте не нашлось ни одной главы вида «== I =='] };
 
   // Чистый текст кладём рядом: по нему удобно искать руками. У закрытого
@@ -244,9 +286,13 @@ async function sverit(r) {
       // «часть I» — это та же метка «I», только названная по-человечески:
       // у «Старухи Изергиль» деление на части, а не на главы, и писать в
       // карточке голое «I» значило бы называть часть главой.
+      // «пролог» — часть до первой пронумерованной главки; в источнике она
+      // помечена нулём (см. scripts/poema.mjs). В карточке слово понятнее.
       const slova = String(row.chapter || '');
       const rimskie = slova.match(/\b[IVXLC]+\b/g);
-      const zayavleny = /\d/.test(slova)
+      const zayavleny = /проло[гж]/i.test(slova)
+        ? ['0']
+        : /\d/.test(slova)
         ? [(slova.match(/\d+/g) || []).join('.')]
         : rimskie || slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
       if (!zayavleny.length) bedy.push(`${gde}: не указана глава`);

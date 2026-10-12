@@ -169,7 +169,7 @@ export const works = [
     cards: 3,
     minor: 1,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'chistyy-ponedelnik',
@@ -195,7 +195,7 @@ export const works = [
     cards: 6,
     minor: 0,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'oblako-v-shtanakh',
@@ -208,7 +208,7 @@ export const works = [
     cards: 2,
     minor: 0,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'rekviem',

@@ -26,6 +26,8 @@ import * as dvenadtsat from './dvenadtsat.js';
 import * as oblako from './oblako-v-shtanakh.js';
 import * as prestuplenie from './prestuplenie-i-nakazanie.js';
 import * as ktoNaRusi from './kto-na-rusi.js';
+import * as rekviem from './rekviem.js';
+import * as tikhiyDon from './tikhiy-don.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -119,6 +121,16 @@ export const dataBySlug = {
     warmup: dvenadtsat.warmup || [],
     matching: dvenadtsat.matching || [],
     terms: dvenadtsat.terms || [],
+  }),
+  'rekviem': sobrat('rekviem', rekviem, {
+    warmup: rekviem.warmup || [],
+    matching: rekviem.matching || [],
+    terms: rekviem.terms || [],
+  }),
+  'tikhiy-don': sobrat('tikhiy-don', tikhiyDon, {
+    warmup: tikhiyDon.warmup || [],
+    matching: tikhiyDon.matching || [],
+    terms: tikhiyDon.terms || [],
   }),
   'kto-na-rusi': sobrat('kto-na-rusi', ktoNaRusi, {
     warmup: ktoNaRusi.warmup || [],

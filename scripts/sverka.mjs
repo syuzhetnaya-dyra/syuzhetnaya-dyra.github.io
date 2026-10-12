@@ -139,6 +139,24 @@ const RABOTY = [
     chisto: 'gospodin-iz-san-francisco.txt',
   },
   {
+    slug: 'tikhiy-don',
+    // Шолохов под авторским правом: текст только локально, в private/
+    zakrytoe: true,
+    dannye: 'src/data/tikhiy-don.js',
+    karty: (m) => m.cards,
+    syroy: 'tikhiy-don.raw.txt',
+    chisto: 'tikhiy-don.txt',
+  },
+  {
+    slug: 'rekviem',
+    // Ахматова под авторским правом: текст только локально, в private/
+    zakrytoe: true,
+    dannye: 'src/data/rekviem.js',
+    karty: (m) => m.cards,
+    syroy: 'rekviem.raw.txt',
+    chisto: 'rekviem.txt',
+  },
+  {
     slug: 'odin-den-ivana-denisovicha',
     // Солженицын под авторским правом: текст только локально, в private/
     zakrytoe: true,

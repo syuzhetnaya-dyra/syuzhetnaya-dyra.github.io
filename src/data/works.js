@@ -221,7 +221,7 @@ export const works = [
     cards: 3,
     minor: 0,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'odin-den-ivana-denisovicha',
@@ -260,7 +260,7 @@ export const works = [
     cards: 12,
     minor: 12,
     wave: 3,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'molodaya-gvardiya',

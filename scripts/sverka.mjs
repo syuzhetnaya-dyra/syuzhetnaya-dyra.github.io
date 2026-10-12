@@ -104,6 +104,20 @@ const RABOTY = [
     chisto: 'na-dne.txt',
   },
   {
+    slug: 'kto-na-rusi',
+    dannye: 'src/data/kto-na-rusi.js',
+    karty: (m) => m.cards,
+    syroy: 'kto-na-rusi.raw.txt',
+    chisto: 'kto-na-rusi.txt',
+  },
+  {
+    slug: 'prestuplenie-i-nakazanie',
+    dannye: 'src/data/prestuplenie-i-nakazanie.js',
+    karty: (m) => m.cards,
+    syroy: 'prestuplenie-i-nakazanie.raw.txt',
+    chisto: 'prestuplenie-i-nakazanie.txt',
+  },
+  {
     slug: 'oblako-v-shtanakh',
     dannye: 'src/data/oblako-v-shtanakh.js',
     karty: (m) => m.cards,
@@ -160,6 +174,13 @@ function pochistit(syroy) {
   t = t.replace(/\{\{\s*(?:razr|разр|разрядка)\s*\|\s*([^{}]*?)\s*\}\}/gi, '$1');
   t = t.replace(/\{\{\s*(?:Ремарка|Выдел)\s*\|\s*([^|{}]*?)\s*\}\}/gi, '$1');
   t = t.replace(/\{\{lang\|[^|}]*\|([^{}]*)\}\}/g, '$1');
+  /*
+   * {{poemx|РУСЬ|Ты и убогая…}} — внутри шаблона лежит само стихотворение.
+   * Выбросить шаблон целиком значит выбросить стихи: так из «Кому на Руси
+   * жить хорошо» пропадала «Русь», та самая, которой поэма отвечает на
+   * свой вопрос. Заголовок и текст остаются, служебное уходит.
+   */
+  t = t.replace(/\{\{\s*poemx?\s*\|([^|{}]*)\|([\s\S]*?)\}\}/gi, (_, zag, telo) => `${zag}\n${telo}`);
   t = t.replace(/&eacute;/g, 'é').replace(/&agrave;/g, 'à').replace(/&ecirc;/g, 'ê');
   t = t.replace(/\{\{[^{}]*\}\}/g, '').replace(/\{\{[\s\S]*?\}\}/g, '');
   t = t.replace(/\[\[[^\]|]*\|([^\]]*)\]\]/g, '$1').replace(/\[\[([^\]]*)\]\]/g, '$1');
@@ -193,7 +214,32 @@ async function sverit(r) {
     return { slug: r.slug, bedy: [`нет текста источника: lithero-content/sources/${r.syroy}`] };
   }
 
-  const tekst = pochistit(readFileSync(syroyPut, 'utf8'));
+  /*
+   * Чистим ПОГЛАВНО, а не весь том разом.
+   *
+   * Правила чистки ленивые и многострочные: «вырезать от <ref> до
+   * </ref>», «от {{ до }}». Пока текст — одна глава, это безопасно. Но
+   * книга склеена из двух десятков скачанных страниц, и если на одной из
+   * них тег не закрыт, правило перепрыгивает на следующую страницу и
+   * съедает всё между ними вместе с метками глав.
+   *
+   * Именно так из «Кому на Руси жить хорошо» пропали семь глав разом —
+   * и сверка об этом молчала: цитат из пропавших глав в данных не было.
+   * Поглавная чистка закрывает весь этот класс потерь: что бы ни было
+   * сломано внутри главы, за её край оно не выйдет.
+   */
+  const METKA = /^=+\s*(?:[IVXLC]+|\d+(?:\.\d+){0,2})\s*=+\s*$/;
+  const tekst = readFileSync(syroyPut, 'utf8')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .reduce((chasti, stroka) => {
+      if (METKA.test(stroka)) chasti.push([stroka]);
+      else if (chasti.length) chasti[chasti.length - 1].push(stroka);
+      else chasti.push([stroka]);
+      return chasti;
+    }, [])
+    .map((chast) => (METKA.test(chast[0]) ? chast[0] + '\n' + pochistit(chast.slice(1).join('\n')) : pochistit(chast.join('\n'))))
+    .join('\n');
   const glavy = new Map();
   // Метка главы бывает римской («IV») или составной («1.9» — часть первая,
   // глава девятая): у «Обломова» главы нумеруются внутри каждой части
@@ -290,13 +336,23 @@ async function sverit(r) {
       // помечена нулём (см. scripts/poema.mjs). В карточке слово понятнее.
       const slova = String(row.chapter || '');
       const rimskie = slova.match(/\b[IVXLC]+\b/g);
-      const zayavleny = /проло[гж]/i.test(slova)
-        ? ['0']
-        : /\d/.test(slova)
+      // Номер части важнее слова: «часть 1, пролог» — это 1.0, а не 0.
+      // Голый «пролог» без цифр — пролог всего произведения, он и есть 0.
+      const zayavleny = /\d/.test(slova)
         ? [(slova.match(/\d+/g) || []).join('.')]
+        : /проло[гж]/i.test(slova)
+        ? ['0']
         : rimskie || slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);
+      /*
+       * «Часть 4» верно и для главы 4.2, и для песни 4.7. Менее точная
+       * ссылка — не ошибка: у «Пира на весь мир» песни лежат внутри
+       * глав, и указывать их номером значило бы выдумать нумерацию,
+       * которой у Некрасова нет.
+       */
+      const podhodit = (z) => z === najdenaV || najdenaV.startsWith(z + '.');
+
       if (!zayavleny.length) bedy.push(`${gde}: не указана глава`);
-      else if (!zayavleny.includes(najdenaV)) {
+      else if (!zayavleny.some(podhodit)) {
         bedy.push(`${gde}: заявлена глава ${row.chapter}, а цитата в главе ${najdenaV}`);
       }
     }

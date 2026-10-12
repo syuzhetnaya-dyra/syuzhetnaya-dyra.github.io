@@ -24,6 +24,8 @@ import * as denisovich from './odin-den-ivana-denisovicha.js';
 import * as sanFrancisco from './gospodin-iz-san-francisco.js';
 import * as dvenadtsat from './dvenadtsat.js';
 import * as oblako from './oblako-v-shtanakh.js';
+import * as prestuplenie from './prestuplenie-i-nakazanie.js';
+import * as ktoNaRusi from './kto-na-rusi.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -117,6 +119,16 @@ export const dataBySlug = {
     warmup: dvenadtsat.warmup || [],
     matching: dvenadtsat.matching || [],
     terms: dvenadtsat.terms || [],
+  }),
+  'kto-na-rusi': sobrat('kto-na-rusi', ktoNaRusi, {
+    warmup: ktoNaRusi.warmup || [],
+    matching: ktoNaRusi.matching || [],
+    terms: ktoNaRusi.terms || [],
+  }),
+  'prestuplenie-i-nakazanie': sobrat('prestuplenie-i-nakazanie', prestuplenie, {
+    warmup: prestuplenie.warmup || [],
+    matching: prestuplenie.matching || [],
+    terms: prestuplenie.terms || [],
   }),
   'oblako-v-shtanakh': sobrat('oblako-v-shtanakh', oblako, {
     warmup: oblako.warmup || [],

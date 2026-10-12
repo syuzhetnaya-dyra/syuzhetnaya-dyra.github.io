@@ -91,7 +91,7 @@ export const works = [
     cards: 7,
     minor: 0,
     wave: 1,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'chelovek-v-futlyare',
@@ -143,7 +143,7 @@ export const works = [
     cards: 12,
     minor: 11,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'starukha-izergil',

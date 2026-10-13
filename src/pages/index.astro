@@ -46,27 +46,23 @@ const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeComp
  */
 const idyot = aktsiyaIdyot();
 
-// Боли — слова заказчика, менять их нельзя: это голос аудитории, а не
-// наш пересказ.
-const BOLI = [
-  {
-    h: 'Путаешь, кто что сказал?',
-    t: 'Цитата кажется знакомой, но не можешь вспомнить, какому герою она принадлежит.',
-  },
-  {
-    h: 'Забываешь детали сюжета?',
-    t: 'Вроде читал произведение, но важные эпизоды и поступки персонажей уже смешались.',
-  },
-  {
-    h: 'Боишься потерять баллы на знакомом произведении?',
-    t: 'Самое обидное — ошибиться в задании по тексту, который ты уже прочитал.',
-  },
-];
+/*
+ * Боли аудитории — слова заказчика. Тремя карточками они занимали целый
+ * экран над каталогом и выглядели грузно, поэтому остались одной строкой:
+ * «путаешь героев, цитаты и важные детали» в первом экране — это те же
+ * три боли, сказанные разом. Здесь только вывод, он идёт в блок с оплатой.
+ */
+const VYVOD =
+  '«Сюжетная дыра» помогает обнаружить слабые места до экзамена, а не во время него.';
 
 /*
  * Три возможности — это ровно три вкладки продукта, в том же порядке и с
  * теми же римскими цифрами, что в шапке произведения. Новых умений тут не
  * придумано: I — досье, II — чек, III — тест-дыра.
+ *
+ * На первом экране от них остаются только названия одной строкой, а
+ * описания стоят в бордовом блоке с оплатой: там человек уже решает,
+ * платить ли, и подробности ему нужны.
  */
 const UMEET = [
   {
@@ -110,102 +106,74 @@ const VOPROSY = [
 >
   <Header />
 
-  <main class="works">
-    {/*
-      Первый экран. Коллаж — настоящая картинка, а не background-image: на
-      телефоне он стоит полосой над текстом, на широком экране уезжает
-      фоном под текст, и в обоих случаях браузер качает подходящий размер
-      сам. У background-image выбрать размер нечем.
+  {/*
+    Первый экран. Коллаж прижат к краям рамки и к самому верху: он лежит не
+    внутри .works с её полями, а отдельным блоком перед ней, и шапка лежит
+    на нём, как на титульной странице произведения.
 
-      Текста ровно столько, чтобы стало понятно, и ни строкой больше:
-      вопрос, одна фраза про боль, обещание — и кнопка. Названия сайта тут
-      нет: оно стоит в шапке рядом со знаком.
-    */}
-    <header class="glav">
-      <img
-        class="glav__fon"
-        src={asset('hero/glavnaya-900.jpg')}
-        srcset={`${asset('hero/glavnaya-900.jpg')} 900w, ${asset('hero/glavnaya-1680.jpg')} 1680w`}
-        sizes="100vw"
-        alt=""
-        width="1680"
-        height="865"
-        fetchpriority="high"
-        decoding="async"
-      />
+    Картинка настоящая, а не background-image: у картинки есть srcset, и
+    телефон качает версию в 900 пикселей вместо 1680. У фона выбрать размер
+    нечем. На узком экране она стоит полосой над текстом, на широком
+    уезжает фоном под текст — у коллажа левая половина пустая, бумажная,
+    туда текст и ложится.
 
-      <div class="glav__text">
-        <h1 class="glav__h">
-          До сих пор боишься <em class="glav__akcent">потерять баллы</em> на 2-м задании ЕГЭ по
-          литературе?
-        </h1>
+    Текста ровно столько, чтобы стало понятно: вопрос, строка про боль,
+    обещание, строка про три раздела — и кнопка. Подробности про разделы
+    живут в бордовом блоке с оплатой, а не здесь.
+  */}
+  <section class="glav" aria-labelledby="h-glav">
+    <img
+      class="glav__fon"
+      src={asset('hero/glavnaya-900.jpg')}
+      srcset={`${asset('hero/glavnaya-900.jpg')} 900w, ${asset('hero/glavnaya-1680.jpg')} 1680w`}
+      sizes="100vw"
+      alt=""
+      width="1680"
+      height="885"
+      fetchpriority="high"
+      decoding="async"
+    />
 
-        <p class="glav__lead">
-          Прочитал произведение, но путаешь героев, цитаты и важные детали?
-        </p>
+    <div class="glav__text">
+      <h1 class="glav__h" id="h-glav">
+        До сих пор боишься <em class="glav__akcent">потерять баллы</em> на 2-м задании ЕГЭ по
+        литературе?
+      </h1>
 
-        <p class="glav__korotko">Не просто перечитывай. Проверяй, что действительно запомнил.</p>
+      <p class="glav__lead">Прочитал произведение, но путаешь героев, цитаты и важные детали?</p>
 
-        <div class="glav__act" data-aktsiya hidden={!idyot}>
-          <a
-            class="glav__cta"
-            href={SSYLKA_OPLATY}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Получить доступ за {rubli(CENA_AKTSIYA)}
-            <span class="glav__strelka" aria-hidden="true">→</span>
-          </a>
-          <p class="glav__melko">
-            Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)} · «Ионыч» открыт всем
-          </p>
-        </div>
+      <p class="glav__korotko">Не просто перечитывай. Проверяй, что действительно запомнил.</p>
 
-        <div data-posle hidden={idyot}>
-          <p class="glav__melko">
-            Стартовая скидка закончилась. Полный доступ — {rubli(CENA_POSLE)}. «Ионыч» открыт всем.
-          </p>
-        </div>
-      </div>
-    </header>
-
-    <section class="boli" aria-labelledby="h-boli">
-      <h2 class="boli__h" id="h-boli">Знакомо?</h2>
-
-      <ul class="boli__grid">
-        {
-          BOLI.map((b) => (
-            <li class="boli__card">
-              <h3 class="boli__card-h">{b.h}</h3>
-              <p class="boli__card-t">{b.t}</p>
-            </li>
-          ))
-        }
-      </ul>
-
-      <p class="boli__itog">
-        «Сюжетная дыра» помогает обнаружить слабые места до экзамена, а не во время него.
+      {/* Три раздела одной строкой — ровно те три вкладки, что откроются
+          внутри произведения, и в том же порядке. */}
+      <p class="glav__chto">
+        {UMEET.map((u, i) => (
+          <Fragment>
+            {i > 0 && <span class="glav__tochka" aria-hidden="true"> · </span>}
+            {u.h}
+          </Fragment>
+        ))}
       </p>
-    </section>
 
-    <section class="umeet" aria-labelledby="h-umeet">
-      <h2 class="umeet__h" id="h-umeet">Всё, чтобы перестать путаться в произведениях</h2>
+      <div class="glav__act" data-aktsiya hidden={!idyot}>
+        <a class="glav__cta" href={SSYLKA_OPLATY} target="_blank" rel="noopener noreferrer">
+          Получить доступ за {rubli(CENA_AKTSIYA)}
+          <span class="glav__strelka" aria-hidden="true">→</span>
+        </a>
+        <p class="glav__melko">
+          Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)} · «Ионыч» открыт всем
+        </p>
+      </div>
 
-      <ul class="umeet__grid">
-        {
-          UMEET.map((u) => (
-            <li class="umeet__card">
-              <span class="umeet__nomer" aria-hidden="true">
-                {u.nomer}
-              </span>
-              <h3 class="umeet__card-h">{u.h}</h3>
-              <p class="umeet__card-t">{u.t}</p>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
+      <div data-posle hidden={idyot}>
+        <p class="glav__melko">
+          Стартовая скидка закончилась. Полный доступ — {rubli(CENA_POSLE)}. «Ионыч» открыт всем.
+        </p>
+      </div>
+    </div>
+  </section>
 
+  <main class="works">
     <section class="works__band" aria-labelledby="h-open">
       <h2 class="works__band-h" id="h-open">Открыто</h2>
 
@@ -312,6 +280,23 @@ const VOPROSY = [
           сюжета в одном тренажёре. Готовься системно и закрывай пробелы до ЕГЭ.
         </p>
 
+        {/*
+          Подробности про три раздела стоят здесь, а не над каталогом: на
+          первом экране от них остаётся строка с названиями, а описания
+          нужны там, где человек решает, платить ли.
+        */}
+        <ul class="prodazha__chto">
+          {UMEET.map((u) => (
+            <li class="prodazha__punkt">
+              <span class="prodazha__nomer" aria-hidden="true">{u.nomer}</span>
+              <b class="prodazha__punkt-h">{u.h}</b>
+              <span class="prodazha__punkt-t">{u.t}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p class="prodazha__vyvod">{VYVOD}</p>
+
         <div class="prodazha__cena" data-aktsiya hidden={!idyot}>
           <b class="prodazha__rub">{rubli(CENA_AKTSIYA)}</b>
           <s class="prodazha__staraya">
@@ -368,11 +353,11 @@ const VOPROSY = [
             Получить доступ за {rubli(CENA_AKTSIYA)}
             <span class="prodazha__strelka" aria-hidden="true">→</span>
           </a>
+          {/* Условия одной строкой. Отдельного абзаца «490 ₽ за 12 месяцев
+              доступа с момента оплаты, разовый платёж, без автопродления»
+              тут больше нет: он повторял эту же строку и подробный ответ в
+              «Коротких ответах» ниже. */}
           <p class="prodazha__melko">Один платёж · 12 месяцев доступа · Без автопродления</p>
-          <p class="prodazha__uslovie">
-            {rubli(CENA_AKTSIYA)} за 12 месяцев доступа с момента оплаты. Разовый платёж, без
-            автопродления.
-          </p>
         </div>
 
         {/*

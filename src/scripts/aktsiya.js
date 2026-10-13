@@ -30,7 +30,22 @@ const sklonenie = (n, one, few, many) => {
 
 const DVE = (n) => String(n).padStart(2, '0');
 
+/*
+ * Часовой живёт на уровне модуля, а не внутри mountAktsiya: функция
+ * вызывается дважды — сразу при загрузке скрипта и потом на каждом
+ * astro:page-load. Без этого каждый вызов заводил бы ещё один интервал на
+ * те же узлы.
+ */
+let chasovoy = null;
+
+const pogasit = () => {
+  if (chasovoy) clearInterval(chasovoy);
+  chasovoy = null;
+};
+
 export function mountAktsiya() {
+  pogasit();
+
   const uzly = {
     dni: document.querySelectorAll('[data-otschet-dni]'),
     chasy: document.querySelectorAll('[data-otschet-chasy]'),
@@ -48,8 +63,6 @@ export function mountAktsiya() {
 
   // Нечего переключать и нечего считать — страница без продающего блока.
   if (!aktsiya.length && !posle.length && !ceny.length && !uzly.dni.length) return;
-
-  let chasovoy = null;
 
   const postavit = (spisok, tekst) => {
     for (const el of spisok) el.textContent = tekst;
@@ -86,8 +99,7 @@ export function mountAktsiya() {
     sostoyanie(idyot);
 
     if (!idyot) {
-      if (chasovoy) clearInterval(chasovoy);
-      chasovoy = null;
+      pogasit();
       return;
     }
 
@@ -117,10 +129,7 @@ export function mountAktsiya() {
    */
   document.addEventListener(
     'astro:before-swap',
-    () => {
-      if (chasovoy) clearInterval(chasovoy);
-      chasovoy = null;
-    },
+    pogasit,
     { once: true }
   );
 }

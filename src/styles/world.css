@@ -1921,8 +1921,13 @@
 
 /* На титульном экране шапка лежит НА фотографии, а не полосой над ней.
    Липкой она здесь быть не может: без заливки, повиснув над «Зачем это»,
-   она наехала бы на текст. Поэтому — в поток не входит и уезжает с кадром. */
-[data-screen='title'] .hdr {
+   она наехала бы на текст. Поэтому — в поток не входит и уезжает с кадром.
+
+   На главной теперь то же самое: первый экран начинается коллажем, прижатым
+   к верхнему краю, и полоса шапки над ним была бы ровно тем зазором,
+   которого там быть не должно. */
+[data-screen='title'] .hdr,
+[data-screen='works'] .hdr {
   position: absolute;
   top: 0;
   left: 0;
@@ -1933,7 +1938,7 @@
    Заливка здесь не украшение: без неё заголовок «Разминка» и «Пропустить»
    проступали сквозь названия разделов. Цвет — тот же, что у страницы,
    поэтому полосы не видно, пока под шапку ничего не заехало. */
-body:not([data-screen='title']) .hdr {
+body:not([data-screen='title']):not([data-screen='works']) .hdr {
   background: var(--ivory);
 }
 
@@ -4090,15 +4095,21 @@ body:not([data-screen='title']) .hdr {
  * Поэтому здесь нет фотографии во весь экран и нет лепестков — опись не
  * должна выглядеть торжественнее того, к чему ведёт.
  */
-.works {
-  /* Боковое поле названо, потому что от него зависит не только отступ:
-     продающий блок выходит в край экрана ровно на эту величину
-     отрицательным margin. Разойдутся — блок вылезет за край, и на
-     телефоне появится горизонтальная прокрутка. */
+/* Боковое поле названо, потому что от него зависит не только отступ:
+   продающий блок выходит в край экрана ровно на эту величину отрицательным
+   margin, а первый экран лежит вообще за пределами .works и это же поле
+   использует изнутри. Разойдутся — блок вылезет за край, и на телефоне
+   появится горизонтальная прокрутка. */
+.stage {
   --pole: 16px;
+}
+
+.works {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 18px var(--pole) 72px;
+  /* Сверху ноль: над каталогом стоит первый экран, прижатый к нему
+     вплотную, а отступ до «Открыто» задаёт .works__band. */
+  padding: 0 var(--pole) 72px;
 }
 
 /*
@@ -4113,41 +4124,53 @@ body:not([data-screen='title']) .hdr {
  * Выходит в край экрана отрицательным отступом, как продающий блок: от
  * того же --pole, объявленного у .works.
  */
+/*
+ * Первый экран главной.
+ *
+ * Коллаж прижат к краям рамки и к самому верху. Для этого блок лежит не
+ * внутри .works с её боковыми полями, а отдельной секцией перед ней, а
+ * шапка на главной выведена из потока и лежит на картинке — как на
+ * титульной странице произведения.
+ *
+ * Картинка настоящая, а не background-image: у картинки есть srcset, и
+ * телефон качает версию в 900 пикселей вместо 1680. У фона выбрать размер
+ * нечем. На узком экране она стоит полосой над текстом, на широком
+ * уезжает фоном под текст — у коллажа левая половина пустая, бумажная.
+ */
 .glav {
   position: relative;
-  margin-top: 10px;
-  margin-inline: calc(var(--pole) * -1);
-  border-block: 1px solid var(--gold);
   background: var(--ivory);
   overflow: hidden;
 }
 
-/*
- * Полоса чуть ниже, чем сам кадр: у коллажа нижняя треть — пустая бумага,
- * и целиком он отодвигал бы кнопку на первом экране вниз зря. Обрезается
- * по вертикали, по горизонтали виден весь — снимки и сургучная печать
- * стоят у правого края, терять их нельзя.
- */
 .glav__fon {
   display: block;
   width: 100%;
   /*
    * height: auto обязателен. У картинки стоят атрибуты width и height —
-   * они нужны, чтобы место под неё было занято до загрузки и список не
-   * прыгал. Но атрибут height действует как правило height: 865px, и
-   * пока его не сбросить, aspect-ratio ниже не работает вообще:
-   * обе стороны уже заданы, подрезать нечего.
+   * они держат место под неё до загрузки, чтобы страница не прыгала. Но
+   * атрибут height действует как правило height: 885px, и пока его не
+   * сбросить, aspect-ratio ниже не работает вообще: обе стороны уже
+   * заданы, подрезать нечего.
    */
   height: auto;
-  aspect-ratio: 16 / 6.4;
+  /*
+   * Полоса ниже самого кадра: у коллажа нижняя треть — пустая бумага, и
+   * целиком он зря отодвигал бы кнопку вниз. Режется по вертикали, по
+   * горизонтали виден весь — снимки и сургучная печать стоят у правого
+   * края, терять их нельзя.
+   */
+  aspect-ratio: 16 / 7.2;
   object-fit: cover;
-  object-position: center 32%;
+  object-position: center 30%;
 }
 
 .glav__text {
   position: relative;
   z-index: 2;
-  padding: 22px var(--pole) 26px;
+  /* Сверху больше, чем снизу: над текстом лежит шапка, и заголовок не
+     должен под неё заезжать. */
+  padding: 26px var(--pole) 30px;
 }
 
 .glav__h {
@@ -4179,13 +4202,30 @@ body:not([data-screen='title']) .hdr {
 }
 
 .glav__korotko {
-  margin: 0 0 20px;
+  margin: 0 0 14px;
   max-width: 38ch;
   font-family: var(--display);
   font-size: clamp(1.0625rem, 4vw, 1.1875rem);
   line-height: 1.35;
   color: var(--wine-deep);
   text-wrap: pretty;
+}
+
+/* Три раздела одной строкой вместо трёх карточек под каталогом. */
+.glav__chto {
+  margin: 0 0 20px;
+  max-width: 40ch;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  text-wrap: pretty;
+}
+
+.glav__tochka {
+  color: var(--gold);
 }
 
 /* Кнопка на первом экране — тот же жест, что в продающем блоке, только на
@@ -4248,13 +4288,13 @@ body:not([data-screen='title']) .hdr {
  *
  * Светлая подложка поверх снимка обязательна: без неё контраст текста
  * зависел бы от того, как именно обрезался кадр на данной ширине, а
- * проверять вёрстку «на глаз на моём экране» мы не умеем.
+ * проверять вёрстку «на глаз на своём экране» мы не умеем.
  */
 @media (min-width: 760px) {
   .glav {
     display: grid;
     align-items: center;
-    min-height: 26rem;
+    min-height: 30rem;
   }
 
   .glav__fon {
@@ -4277,15 +4317,16 @@ body:not([data-screen='title']) .hdr {
     z-index: 1;
     background: linear-gradient(
       to right,
-      var(--ivory) 0 28%,
-      rgba(244, 238, 227, 0.78) 46%,
+      var(--ivory) 0 26%,
+      rgba(244, 238, 227, 0.76) 46%,
       rgba(244, 238, 227, 0) 64%
     );
   }
 
   .glav__text {
-    max-width: 36rem;
-    padding: 44px var(--pole);
+    max-width: 38rem;
+    /* 92px сверху — под шапкой, которая лежит на картинке. */
+    padding: 92px calc(var(--pole) * 2.5) 56px;
   }
 }
 
@@ -4523,141 +4564,6 @@ body:not([data-screen='title']) .hdr {
  * палитре означал бы два разных «главных красных» в одном продукте.
  */
 
-/* ── «Знакомо?» ── */
-
-.boli {
-  margin-top: 32px;
-}
-
-.boli__h {
-  margin: 0 0 18px;
-  font-family: var(--display);
-  font-size: clamp(1.5rem, 6.4vw, 2rem);
-  line-height: 1.1;
-  color: var(--wine-deep);
-}
-
-.boli__grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-@media (min-width: 720px) {
-  .boli__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Лист, подшитый к делу: тот же жест, что у карточки произведения, —
-   бумага, золотой волосок сверху, ни тени, ни скругления. */
-.boli__card {
-  padding: 15px 16px 16px;
-  border: 1px solid var(--hair);
-  border-top: 2px solid var(--gold);
-  background: var(--paper);
-}
-
-.boli__card-h {
-  margin: 0 0 7px;
-  font-family: var(--display);
-  font-size: 1.0625rem;
-  line-height: 1.22;
-  color: var(--wine);
-  text-wrap: balance;
-}
-
-.boli__card-t {
-  margin: 0;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
-  text-wrap: pretty;
-}
-
-.boli__itog {
-  margin: 18px 0 0;
-  max-width: 56ch;
-  padding-left: 14px;
-  border-left: 1px solid var(--gold);
-  font-family: var(--display);
-  font-style: italic;
-  font-size: clamp(1rem, 3.8vw, 1.125rem);
-  line-height: 1.5;
-  color: var(--ink);
-  text-wrap: pretty;
-}
-
-/* ── «Всё, чтобы перестать путаться» ── */
-
-.umeet {
-  margin-top: 36px;
-}
-
-.umeet__h {
-  margin: 0 0 20px;
-  max-width: 34ch;
-  font-family: var(--display);
-  font-size: clamp(1.5rem, 6.4vw, 2rem);
-  line-height: 1.1;
-  color: var(--wine-deep);
-  text-wrap: balance;
-}
-
-.umeet__grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 18px;
-}
-
-@media (min-width: 720px) {
-  .umeet__grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 26px;
-  }
-}
-
-/* Римская цифра — та же, что в шапке произведения над вкладкой: I досье,
-   II чек, III дыра. Ученик видит здесь ровно те три вкладки, которые
-   откроются внутри, и в том же порядке. */
-.umeet__card {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 14px;
-  row-gap: 6px;
-  align-items: baseline;
-  padding-top: 14px;
-  border-top: 1px solid var(--hair);
-}
-
-.umeet__nomer {
-  grid-row: 1 / span 2;
-  font-family: var(--display);
-  font-size: 1.625rem;
-  line-height: 1;
-  color: var(--gold);
-}
-
-.umeet__card-h {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 1.1875rem;
-  line-height: 1.2;
-  color: var(--ink);
-}
-
-.umeet__card-t {
-  margin: 0;
-  grid-column: 2;
-  font-size: 0.9375rem;
-  line-height: 1.52;
-  color: var(--ink-soft);
-  text-wrap: pretty;
-}
 
 /* ── Продающий блок ── */
 
@@ -4715,6 +4621,78 @@ body:not([data-screen='title']) .hdr {
   font-size: clamp(0.9375rem, 3.8vw, 1.0625rem);
   line-height: 1.55;
   color: rgba(244, 238, 227, 0.86);
+  text-wrap: pretty;
+}
+
+/*
+ * Что внутри — подробно. Над каталогом от этого осталась одна строка с
+ * названиями разделов: тремя карточками они занимали целый экран и
+ * выглядели грузно. Здесь человек уже решает, платить ли, и подробности
+ * ему нужны.
+ *
+ * Римская цифра та же, что в шапке произведения над вкладкой: I досье,
+ * II чек, III дыра. Ученик видит здесь ровно те три вкладки, которые
+ * откроются внутри.
+ */
+.prodazha__chto {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 760px) {
+  .prodazha__chto {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+}
+
+.prodazha__punkt {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  row-gap: 3px;
+  align-items: baseline;
+  padding-top: 12px;
+  border-top: 1px solid rgba(176, 141, 79, 0.42);
+}
+
+.prodazha__nomer {
+  grid-row: 1 / span 2;
+  font-family: var(--display);
+  font-size: 1.375rem;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.prodazha__punkt-h {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  color: var(--ivory);
+}
+
+.prodazha__punkt-t {
+  grid-column: 2;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(244, 238, 227, 0.74);
+  text-wrap: pretty;
+}
+
+.prodazha__vyvod {
+  margin: 0 0 24px;
+  max-width: 52ch;
+  padding-left: 14px;
+  border-left: 1px solid var(--gold);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1rem, 3.8vw, 1.0625rem);
+  line-height: 1.5;
+  color: rgba(244, 238, 227, 0.92);
   text-wrap: pretty;
 }
 
@@ -4880,14 +4858,6 @@ body:not([data-screen='title']) .hdr {
   color: var(--gold);
 }
 
-.prodazha__uslovie {
-  margin: 10px 0 0;
-  max-width: 48ch;
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: rgba(244, 238, 227, 0.68);
-  text-wrap: pretty;
-}
 
 .prodazha__posle-t {
   margin: 0;

@@ -139,6 +139,15 @@ const RABOTY = [
     chisto: 'gospodin-iz-san-francisco.txt',
   },
   {
+    slug: 'molodaya-gvardiya',
+    // Фадеев под авторским правом: текст только локально, в private/
+    zakrytoe: true,
+    dannye: 'src/data/molodaya-gvardiya.js',
+    karty: (m) => m.cards,
+    syroy: 'molodaya-gvardiya.raw.txt',
+    chisto: 'molodaya-gvardiya.txt',
+  },
+  {
     slug: 'tikhiy-don',
     // Шолохов под авторским правом: текст только локально, в private/
     zakrytoe: true,
@@ -164,6 +173,20 @@ const RABOTY = [
     karty: (m) => m.cards,
     syroy: 'odin-den-ivana-denisovicha.raw.txt',
     chisto: 'odin-den-ivana-denisovicha.txt',
+  },
+  {
+    slug: 'chistyy-ponedelnik',
+    dannye: 'src/data/chistyy-ponedelnik.js',
+    karty: (m) => m.cards,
+    syroy: 'chistyy-ponedelnik.raw.txt',
+    chisto: 'chistyy-ponedelnik.txt',
+  },
+  {
+    slug: 'voyna-i-mir',
+    dannye: 'src/data/voyna-i-mir.js',
+    karty: (m) => m.cards,
+    syroy: 'voyna-i-mir.raw.txt',
+    chisto: 'voyna-i-mir.txt',
   },
 ];
 
@@ -212,6 +235,15 @@ function pochistit(syroy) {
 const norm = (s) =>
   s
     .toLowerCase()
+    /*
+     * Знак ударения. В сканах ПСС он расставлен там, где слово читается
+     * двояко: «что́», «бо́льшая», «всё». Это надстрочный значок отдельным
+     * символом, на вид неотличимый ни в карточке, ни в выдаче поиска.
+     * Не снять его — значит не найти цитату, в которой он есть, и
+     * получить «цитата НЕ НАЙДЕНА» там, где текст совпадает буква в
+     * букву.
+     */
+    .replace(/[̀́]/g, '')
     .replace(/ё/g, 'е')
     .replace(/[«»"„“”]/g, '"')
     .replace(/[—–‒-]/g, '-')
@@ -246,7 +278,9 @@ async function sverit(r) {
    * Поглавная чистка закрывает весь этот класс потерь: что бы ни было
    * сломано внутри главы, за её край оно не выйдет.
    */
-  const METKA = /^=+\s*(?:[IVXLC]+|\d+(?:\.\d+){0,2})\s*=+\s*$/;
+  // «Э.1.16» — эпилог «Войны и мира», часть первая, глава шестнадцатая.
+  // Эпилог не пятый том, и писать «том 5» значило бы соврать ученику.
+  const METKA = /^=+\s*(?:[IVXLC]+|(?:Э\.)?\d+(?:\.\d+){0,2})\s*=+\s*$/;
   const tekst = readFileSync(syroyPut, 'utf8')
     .replace(/\r\n/g, '\n')
     .split('\n')
@@ -265,7 +299,10 @@ async function sverit(r) {
   // Знаков равенства бывает и два, и четыре: это уровень заголовка на
   // Викитеке, а не часть метки. Под номер подходит только римская цифра
   // или составной номер, поэтому «== Примечания ==» сюда не попадёт.
-  const kuski = tekst.split(/^=+\s*([IVXLC]+|\d+(?:\.\d+){0,2})\s*=+\s*$/m);
+  // Тот же набор метк, что у METKA выше: «Э.» — эпилог «Войны и мира».
+  // Разойдутся — главы эпилога молча прилипнут к предыдущей, и сверка
+  // отчитается об успехе по тексту, в котором их нет.
+  const kuski = tekst.split(/^=+\s*([IVXLC]+|(?:Э\.)?\d+(?:\.\d+){0,2})\s*=+\s*$/m);
   /*
    * Повторный номер — это потеря текста, а не мелочь.
    *
@@ -356,8 +393,12 @@ async function sverit(r) {
       const rimskie = slova.match(/\b[IVXLC]+\b/g);
       // Номер части важнее слова: «часть 1, пролог» — это 1.0, а не 0.
       // Голый «пролог» без цифр — пролог всего произведения, он и есть 0.
+      // «эпилог, часть 1, глава 16» — это метка Э.1.16: у эпилога «Войны и
+      // мира» своя нумерация частей, и без приставки он слился бы с томом
+      // первым.
+      const epilog = /эпилог/i.test(slova) ? 'Э.' : '';
       const zayavleny = /\d/.test(slova)
-        ? [(slova.match(/\d+/g) || []).join('.')]
+        ? [epilog + (slova.match(/\d+/g) || []).join('.')]
         : /проло[гж]/i.test(slova)
         ? ['0']
         : rimskie || slova.split(/\s*(?:и|,|\/)\s*/).filter(Boolean);

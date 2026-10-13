@@ -28,6 +28,9 @@ import * as prestuplenie from './prestuplenie-i-nakazanie.js';
 import * as ktoNaRusi from './kto-na-rusi.js';
 import * as rekviem from './rekviem.js';
 import * as tikhiyDon from './tikhiy-don.js';
+import * as molodayaGvardiya from './molodaya-gvardiya.js';
+import * as voynaIMir from './voyna-i-mir.js';
+import * as chistyyPonedelnik from './chistyy-ponedelnik.js';
 import { warmup as ionychWarmup, matching as ionychMatching, terms as ionychTerms } from './zadaniya.js';
 import { workBySlug } from './works.js';
 
@@ -126,6 +129,21 @@ export const dataBySlug = {
     warmup: rekviem.warmup || [],
     matching: rekviem.matching || [],
     terms: rekviem.terms || [],
+  }),
+  'molodaya-gvardiya': sobrat('molodaya-gvardiya', molodayaGvardiya, {
+    warmup: molodayaGvardiya.warmup || [],
+    matching: molodayaGvardiya.matching || [],
+    terms: molodayaGvardiya.terms || [],
+  }),
+  'chistyy-ponedelnik': sobrat('chistyy-ponedelnik', chistyyPonedelnik, {
+    warmup: chistyyPonedelnik.warmup || [],
+    matching: chistyyPonedelnik.matching || [],
+    terms: chistyyPonedelnik.terms || [],
+  }),
+  'voyna-i-mir': sobrat('voyna-i-mir', voynaIMir, {
+    warmup: voynaIMir.warmup || [],
+    matching: voynaIMir.matching || [],
+    terms: voynaIMir.terms || [],
   }),
   'tikhiy-don': sobrat('tikhiy-don', tikhiyDon, {
     warmup: tikhiyDon.warmup || [],

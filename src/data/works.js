@@ -182,7 +182,7 @@ export const works = [
     cards: 2,
     minor: 0,
     wave: 2,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'dvenadtsat',
@@ -247,7 +247,7 @@ export const works = [
     cards: 16,
     minor: 18,
     wave: 3,
-    status: 'soon',
+    status: 'published',
   },
   {
     slug: 'tikhiy-don',
@@ -273,7 +273,7 @@ export const works = [
     cards: 10,
     minor: 11,
     wave: 3,
-    status: 'soon',
+    status: 'published',
   },
 ];
 

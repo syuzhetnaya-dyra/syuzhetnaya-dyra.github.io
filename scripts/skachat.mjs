@@ -180,6 +180,71 @@ const RABOTY = {
     ],
     izdanie: 'ru.wikisource.org · Н. А. Некрасов. Кому на Руси жить хорошо',
   },
+
+  /*
+   * Четыре тома, в каждом свои части, в части своя нумерация глав. Одна
+   * «глава IX» без тома и части — это десяток разных мест в книге, и
+   * ученик по такой ссылке будет искать цитату полчаса. Поэтому метка
+   * трёхсоставная: 1.1.25 значит том первый, часть первая, глава
+   * двадцать пятая.
+   *
+   * Эпилог — не пятый том, и писать «том 5» значило бы соврать. Его
+   * метки идут с «Э.»: Э.1.16 — эпилог, часть первая, глава
+   * шестнадцатая. Это понимают METKA и сверка (scripts/sverka.mjs).
+   *
+   * Страницы отдельных глав на Викитеке есть, но все они —
+   * перенаправления: текст набран по сканам ПСС в 90 томах и собирается
+   * транслюзией, так что в wikitext тома лежит одна строка <pages
+   * index=…>. Поэтому том забирается разобранным (action=parse), а режет
+   * его на главы scripts/epopeya.mjs — он же проверяет, что глав вышло
+   * ровно столько, сколько здесь заявлено.
+   *
+   * Числа не из памяти: структура перебрана по allpages Викитеки, 361
+   * глава, пропусков в нумерации нет.
+   */
+  'voyna-i-mir': {
+    toma: [
+      { imya: 'Том 1', metka: '1', chasti: [25, 21, 19] },
+      { imya: 'Том 2', metka: '2', chasti: [16, 21, 26, 13, 22] },
+      /*
+       * У страницы «Том 3» в директиве стоит to=400, а текст тома идёт до
+       * 409-го листа скана: обрезаны конец главы XXXIII и вся глава XXXIV
+       * (Пьер вытаскивает ребёнка из огня и попадает под арест) — то, чем
+       * том кончается. Это недосмотр на стороне Викитеки, и молча потерять
+       * из-за него главу нельзя, поэтому хвост забирается отдельно.
+       * Остальные тома проверены: они кончаются там, где начинаются
+       * «Печатные варианты».
+       */
+      {
+        imya: 'Том 3',
+        metka: '3',
+        chasti: [23, 39, 34],
+        hvost: { skan: 'L. N. Tolstoy. All in 90 volumes. Volume 11.pdf', ot: 401, do: 409 },
+      },
+      { imya: 'Том 4', metka: '4', chasti: [16, 19, 19, 20] },
+      { imya: 'Эпилог', metka: 'Э', chasti: [16, 12] },
+    ],
+    izdanie: 'ru.wikisource.org · Л. Н. Толстой. Война и мир. ПСС в 90 т., тт. 9—12',
+  },
+
+  /*
+   * Единственное произведение не с Викитеки: «Чистого понедельника» там
+   * нет — ни отдельной страницей, ни в составе «Тёмных аллей» (на
+   * Викитеке лежит только одноимённый рассказ, давший название сборнику).
+   *
+   * Бунин умер в 1953 году, значит с 1 января 2024 года его тексты в
+   * общественном достоянии (ст. 1281 ГК РФ: жизнь автора плюс семьдесят
+   * лет). Поэтому берём из библиотеки Комарова, которая указывает
+   * печатное издание, и это издание записано в источнике карточек.
+   *
+   * Разметка там своя: абзац — <z>, отступ — <o></o>. Рассказ лежит
+   * одной страницей, p.2 отдаёт перенаправление.
+   */
+  'chistyy-ponedelnik': {
+    ilibrary: 1019,
+    izdanie:
+      'ilibrary.ru · И. А. Бунин. Стихотворения. Рассказы. Повести. Библиотека Всемирной литературы. М.: Художественная литература, 1973',
+  },
 };
 
 
@@ -191,6 +256,130 @@ if (!r) {
 }
 
 mkdirSync(SOURCES, { recursive: true });
+
+/*
+ * Рассказ из библиотеки Комарова. Так забирается только «Чистый
+ * понедельник» — почему, написано в его записи выше.
+ *
+ * Страница в windows-1251, и это надо читать из объявленной кодировки, а
+ * не предполагать utf-8: иначе получится мусор, в котором сверка не найдёт
+ * ни одной цитаты и будет права.
+ */
+if (r.ilibrary) {
+  const url = `http://ilibrary.ru/text/${r.ilibrary}/p.1/index.html`;
+  let bayty = null;
+  for (let popytka = 1; popytka <= 3; popytka += 1) {
+    try {
+      const otvet = await fetch(url, { headers: { 'user-agent': 'lithero-sverka/1.0' } });
+      if (!otvet.ok) throw new Error(`код ${otvet.status}`);
+      bayty = Buffer.from(await otvet.arrayBuffer());
+      break;
+    } catch (e) {
+      if (popytka === 3) throw new Error(`${url}: ${e.message}`);
+      await new Promise((res) => setTimeout(res, 1500 * popytka));
+    }
+  }
+
+  const html = new TextDecoder('windows-1251').decode(bayty);
+  const SUSCHNOSTI = {
+    '&mdash;': '—', '&ndash;': '–', '&laquo;': '«', '&raquo;': '»',
+    '&bdquo;': '„', '&ldquo;': '“', '&rdquo;': '”', '&hellip;': '…',
+    '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"',
+  };
+  const abzacy = [...html.matchAll(/<z>([\s\S]*?)<\/z>/g)].map((m) =>
+    m[1]
+      .replace(/<[^>]+>/g, '')
+      .replace(/&[a-z]+;/g, (s) => SUSCHNOSTI[s] ?? s)
+      .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+      .trim()
+  );
+
+  // Первый абзац — имя автора, набранное тем же тегом. Это не текст
+  // рассказа, и цитата из него была бы цитатой из шапки страницы.
+  if (/^Иван Бунин$/.test(abzacy[0])) abzacy.shift();
+
+  if (abzacy.length < 50) throw new Error(`абзацев всего ${abzacy.length} — разметка изменилась`);
+  const ostalis = [...new Set(abzacy.join('').match(/&[a-z]+;/g) || [])];
+  if (ostalis.length) throw new Error(`нераспознанные сущности: ${ostalis.join(' ')}`);
+
+  const putI = join(SOURCES, `${slug}.raw.txt`);
+  /*
+   * Метка «== 1 ==» одна на весь рассказ: он идёт сплошь, и делить его на
+   * главы значило бы выдумать деление, которого у Бунина нет. Сверка на
+   * одной главе номера не проверяет — проверять нечего, цитата может быть
+   * найдена только здесь. Так же лежат «Студент», «Человек в футляре» и
+   * «Господин из Сан-Франциско».
+   */
+  writeFileSync(putI, `== 1 ==\n${abzacy.join('\n\n')}\n`, 'utf8');
+  console.log(`${putI}`);
+  console.log(`абзацев ${abzacy.length}, ${(abzacy.join('').length / 1024).toFixed(0)} КБ`);
+  console.log(`издание: ${r.izdanie}`);
+  process.exit(0);
+}
+
+/*
+ * Том целиком, разобранным. Так забирается только «Война и мир»: у неё
+ * страницы глав — перенаправления, и дословный текст лежит в разобранной
+ * странице тома. Подробности — в записи 'voyna-i-mir' выше и в
+ * scripts/epopeya.mjs.
+ */
+if (r.toma) {
+  const { razobrat } = await import('./epopeya.mjs');
+
+  const razobrannoe = async (chto, parametry) => {
+    const u = new URL('https://ru.wikisource.org/w/api.php');
+    u.searchParams.set('action', 'parse');
+    u.searchParams.set('prop', 'text');
+    u.searchParams.set('formatversion', '2');
+    u.searchParams.set('format', 'json');
+    for (const [k, v] of Object.entries(parametry)) u.searchParams.set(k, v);
+
+    for (let popytka = 1; popytka <= 3; popytka += 1) {
+      try {
+        const otvet = await fetch(u, { headers: { 'user-agent': 'lithero-sverka/1.0' } });
+        if (!otvet.ok) throw new Error(`код ${otvet.status}`);
+        const j = await otvet.json();
+        const html = j?.parse?.text;
+        if (!html) throw new Error('в ответе нет разобранного текста');
+        return html;
+      } catch (e) {
+        if (popytka === 3) throw new Error(`${chto}: ${e.message}`);
+        await new Promise((res) => setTimeout(res, 800 * popytka));
+      }
+    }
+    return '';
+  };
+
+  const chasti = [];
+  let glav = 0;
+  for (const t of r.toma) {
+    const razmetka = [
+      await razobrannoe(t.imya, { page: `Война и мир (Толстой)/${t.imya}` }),
+    ];
+    if (t.hvost) {
+      razmetka.push(
+        await razobrannoe(`${t.imya}, хвост`, {
+          title: `Война и мир (Толстой)/${t.imya}`,
+          contentmodel: 'wikitext',
+          text: `<pages index="${t.hvost.skan}" from=${t.hvost.ot} to=${t.hvost.do} />`,
+        })
+      );
+    }
+
+    const razbor = razobrat(razmetka, { metkaToma: t.metka, chasti: t.chasti });
+    chasti.push(razbor.tekst);
+    glav += razbor.glav;
+    const lishnee = razbor.nepoznannye.length ? `, непонятных заголовков ${razbor.nepoznannye.length}` : '';
+    console.log(`${t.imya}: глав ${razbor.glav}${lishnee}`);
+  }
+
+  const putT = join(SOURCES, `${slug}.raw.txt`);
+  writeFileSync(putT, chasti.join('\n\n') + '\n', 'utf8');
+  console.log(`\n${putT}`);
+  console.log(`глав ${glav}, ${(chasti.join('').length / 1024).toFixed(0)} КБ`);
+  console.log(`издание: ${r.izdanie}`);
+  process.exit(0);
+}
 
 /*
  * Список страниц к скачиванию. У одних произведений главы идут сплошной

@@ -5,7 +5,8 @@ import '../styles/world.css';
 import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
-import { platno, METKA_NACHALO, METKA_KONEC, SSYLKA_OPLATY, KONTAKTY, CENA } from '../data/dostup.js';
+import { platno, METKA_NACHALO, METKA_KONEC, SSYLKA_OPLATY, KONTAKTY } from '../data/dostup.js';
+import { CENA_AKTSIYA, CENA_POSLE, SROK_SLOVAMI, aktsiyaIdyot, rubli } from '../data/aktsiya.js';
 import { to } from '../scripts/paths.js';
 
 const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
@@ -16,6 +17,13 @@ const { title, screen = '', description, work = '', heroes = 0 } = Astro.props;
  * всегда: человек должен видеть, что он покупает.
  */
 const podZamkom = Boolean(work) && platno(work, screen);
+
+/*
+ * Состояние стартовой скидки на момент сборки. Правду при загрузке
+ * поставит src/scripts/aktsiya.js: страница, собранная до срока, у
+ * посетителя после срока обязана показать другое.
+ */
+const aktsiya = aktsiyaIdyot();
 
 // Продаём, если есть куда отправить покупателя: постоянная ссылка на
 // оплату или хотя бы личка, где выставят счёт руками.
@@ -105,15 +113,46 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
               prodayom ? (
                 <Fragment>
                   <p class="zamok__lead">
-                    Доступ ко всем произведениям{CENA && <Fragment> — <b>{CENA}</b></Fragment>}, навсегда,
-                    включая те, что появятся позже. «Ионыч» разобран целиком и открыт всем — посмотрите
-                    его, если ещё не видели.
+                    Доступ ко всем произведениям — <b data-cena>{rubli(aktsiya ? CENA_AKTSIYA : CENA_POSLE)}</b>{' '}
+                    за 12 месяцев с момента оплаты, разовый платёж, без автопродления. «Ионыч»
+                    разобран целиком и открыт всем — посмотрите его, если ещё не видели.
                   </p>
 
                   {SSYLKA_OPLATY ? (
-                    <a class="zamok__kupit" href={SSYLKA_OPLATY} rel="noopener">
-                      Получить код
-                    </a>
+                    <Fragment>
+                      {/*
+                        Два состояния сразу, переключает src/scripts/aktsiya.js.
+                        Ссылка выставлена на сумму стартовой скидки и после срока
+                        списала бы её же, поэтому по истечении акции кнопка
+                        отключается, а не меняет цену.
+                      */}
+                      <div data-aktsiya hidden={!aktsiya}>
+                        <a
+                          class="zamok__kupit"
+                          href={SSYLKA_OPLATY}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Получить доступ за {rubli(CENA_AKTSIYA)}
+                        </a>
+                        <p class="zamok__kak">
+                          Стартовая скидка — только до {SROK_SLOVAMI}. Код придёт после оплаты.
+                        </p>
+                      </div>
+
+                      <div data-posle hidden={aktsiya}>
+                        <p class="zamok__kak">Напишите мне — пришлю счёт и код:</p>
+                        <ul class="zamok__svyaz">
+                          {KONTAKTY.map((k) => (
+                            <li>
+                              <a class="zamok__kupit" href={k.ssylka} rel="noopener" target="_blank">
+                                {k.imya} <span class="zamok__nik">{k.nik}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </Fragment>
                   ) : (
                     <Fragment>
                       {/* Пока продажа ручная, кнопка ведёт не на оплату, а в личку:
@@ -184,6 +223,7 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
       import { mountSlideNav } from '../scripts/nav.js';
       import { mountMetrika } from '../scripts/metrika.js';
       import { mountZamok } from '../scripts/zamok.js';
+      import { mountAktsiya } from '../scripts/aktsiya.js';
 
       // Замок снимается один раз за загрузку, а не на каждом astro:page-load:
       // он сам это событие и рассылает, когда содержимое расшифровано.
@@ -196,6 +236,9 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
         // тест-дыре, и без него они просто не отправятся.
         mountMetrika();
         mountSlideNav();
+        // Цена и состояние стартовой скидки есть и в замке: собранная
+        // страница про срок не знает, знает только браузер.
+        mountAktsiya();
       });
     </script>
   </body>

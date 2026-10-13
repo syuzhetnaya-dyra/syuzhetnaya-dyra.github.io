@@ -1,19 +1,33 @@
 ---
 /*
- * Выбор произведения.
+ * Главная: зачем это нужно, что внутри, каталог и покупка.
+ *
+ * Порядок не случаен. Сначала страх, с которым ученик сюда пришёл («боюсь
+ * потерять баллы»), потом — чем именно тренажёр этот страх закрывает,
+ * потом сам каталог, и только после него цена. Просить денег до того, как
+ * человек увидел товар, бессмысленно: двадцать произведений с обложками
+ * убеждают лучше любого продающего текста.
  *
  * Открытые произведения идут первыми и ведут на свою титульную. Остальные
  * показаны честно: видно, что они будут, и видно, что их ещё нет. Прятать
  * их целиком нельзя — ученик должен понимать, ради чего возвращаться; но и
  * выдавать за готовые нельзя тем более.
  *
- * Прогресс подставляет скрипт после загрузки: он лежит в браузере, а
- * страница собирается заранее и одинакова для всех.
+ * Прогресс и состояние акции подставляют скрипты после загрузки: страница
+ * собирается заранее и одинакова для всех.
  */
 import Shell from '../layouts/Shell.astro';
 import Header from '../components/Header.astro';
 import { works } from '../data/works.js';
-import { to } from '../scripts/paths.js';
+import { to, asset } from '../scripts/paths.js';
+import { SSYLKA_OPLATY } from '../data/dostup.js';
+import {
+  CENA_AKTSIYA,
+  CENA_POSLE,
+  SROK_SLOVAMI,
+  aktsiyaIdyot,
+  rubli,
+} from '../data/aktsiya.js';
 
 const otkryty = works.filter((w) => w.status === 'published');
 const skoro = works.filter((w) => w.status !== 'published');
@@ -22,6 +36,71 @@ const skoro = works.filter((w) => w.status !== 'published');
 // Ему говорит другое: что идёт следующим. Поэтому «скоро» сортируем по
 // волне, но подписываем словами, а не номерами.
 const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeCompare(b.title, 'ru'));
+
+/*
+ * Состояние акции на момент сборки. Правду при загрузке установит
+ * src/scripts/aktsiya.js — страница, собранная до срока, у посетителя
+ * после срока обязана показать другое. Но собранная разметка должна быть
+ * верной сама по себе: иначе с выключенным JS человек увидит предложение,
+ * которого уже нет.
+ */
+const idyot = aktsiyaIdyot();
+
+// Боли — слова заказчика, менять их нельзя: это голос аудитории, а не
+// наш пересказ.
+const BOLI = [
+  {
+    h: 'Путаешь, кто что сказал?',
+    t: 'Цитата кажется знакомой, но не можешь вспомнить, какому герою она принадлежит.',
+  },
+  {
+    h: 'Забываешь детали сюжета?',
+    t: 'Вроде читал произведение, но важные эпизоды и поступки персонажей уже смешались.',
+  },
+  {
+    h: 'Боишься потерять баллы на знакомом произведении?',
+    t: 'Самое обидное — ошибиться в задании по тексту, который ты уже прочитал.',
+  },
+];
+
+/*
+ * Три возможности — это ровно три вкладки продукта, в том же порядке и с
+ * теми же римскими цифрами, что в шапке произведения. Новых умений тут не
+ * придумано: I — досье, II — чек, III — тест-дыра.
+ */
+const UMEET = [
+  {
+    nomer: 'I',
+    h: 'Досье героев',
+    t: 'Персонажи, важные цитаты, контекст и объяснения — чтобы понимать, кто есть кто.',
+  },
+  {
+    nomer: 'II',
+    h: 'Сюжетный чек',
+    t: 'Проверяй знание событий, эпизодов и деталей, которые легко забыть.',
+  },
+  {
+    nomer: 'III',
+    h: 'Тренировочные задания',
+    t: 'Закрепляй знания на вопросах по конкретным произведениям.',
+  },
+];
+
+const VOPROSY = [
+  {
+    q: 'Что я получу после оплаты?',
+    a: 'Доступ к платным материалам тренажёра: досье героев, цитатам с разборами, сюжетным проверкам и тренировочным заданиям по доступным произведениям.',
+  },
+  { q: 'На сколько действует доступ?', a: '12 месяцев с момента подтверждённой оплаты.' },
+  {
+    q: 'Нужно ли платить каждый месяц?',
+    a: 'Нет. Это разовая оплата за весь период. Автоматического продления нет.',
+  },
+  {
+    q: 'Будут ли появляться новые произведения?',
+    a: 'Да, каталог будет пополняться по мере подготовки новых материалов.',
+  },
+];
 ---
 
 <Shell
@@ -33,12 +112,55 @@ const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeComp
 
   <main class="works">
     <header class="works__head">
-      <h1 class="works__h">Сюжетная дыра</h1>
+      <p class="works__kicker">Сюжетная дыра</p>
+      <h1 class="works__h">
+        До сих пор боишься <em class="works__akcent">потерять баллы</em> на 2-м задании ЕГЭ по
+        литературе?
+      </h1>
       <p class="works__lead">
-        Тренажёр первых заданий ЕГЭ по литературе. Досье героев с цитатами —
-        глава, говорящий и разбор; чек по сюжету; типовые задания.
+        Прочитал произведение, но путаешь героев, цитаты и важные детали? Не оставляй пробелы в
+        знаниях до экзамена. Разбирай персонажей, вспоминай сюжет и проверяй себя на заданиях, чтобы
+        увереннее чувствовать себя на ЕГЭ.
       </p>
+      <p class="works__korotko">Не просто перечитывай. Проверяй, что действительно запомнил.</p>
     </header>
+
+    <section class="boli" aria-labelledby="h-boli">
+      <h2 class="boli__h" id="h-boli">Знакомо?</h2>
+
+      <ul class="boli__grid">
+        {
+          BOLI.map((b) => (
+            <li class="boli__card">
+              <h3 class="boli__card-h">{b.h}</h3>
+              <p class="boli__card-t">{b.t}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="boli__itog">
+        «Сюжетная дыра» помогает обнаружить слабые места до экзамена, а не во время него.
+      </p>
+    </section>
+
+    <section class="umeet" aria-labelledby="h-umeet">
+      <h2 class="umeet__h" id="h-umeet">Всё, чтобы перестать путаться в произведениях</h2>
+
+      <ul class="umeet__grid">
+        {
+          UMEET.map((u) => (
+            <li class="umeet__card">
+              <span class="umeet__nomer" aria-hidden="true">
+                {u.nomer}
+              </span>
+              <h3 class="umeet__card-h">{u.h}</h3>
+              <p class="umeet__card-t">{u.t}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
 
     <section class="works__band" aria-labelledby="h-open">
       <h2 class="works__band-h" id="h-open">Открыто</h2>
@@ -48,19 +170,35 @@ const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeComp
           otkryty.map((w) => (
             <li>
               <a class="wcard" href={to(`${w.slug}/`)} data-work-card={w.slug} data-work-total={w.cards} data-petal-link>
-                <span class="wcard__author">{w.author}</span>
-                <span class="wcard__title">{w.title}</span>
-                <span class="wcard__meta">
-                  {w.genre} · {w.year}
+                {/* Обложка — кадр из титульного экрана произведения, тот
+                    самый, который ученик увидит, перейдя по карточке.
+                    Декоративная: название и автор рядом текстом, и
+                    повторять их в alt значило бы прочитать их дважды. */}
+                <span class="wcard__cover">
+                  <img
+                    src={asset(`hero/cover/${w.slug}.webp`)}
+                    alt=""
+                    width="480"
+                    height="270"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </span>
-                <span class="wcard__foot">
-                  <span class="wcard__count">{w.cards} досье</span>
-                  {/* Полоса прогресса рисуется только тем, кто уже начинал:
-                      пустая полоса у того, кто пришёл впервые, — это укор
-                      ни за что. */}
-                  <span class="wcard__prog" data-work-prog hidden>
-                    <span class="wcard__bar" data-work-bar />
-                    <span class="wcard__ratio" data-work-ratio />
+                <span class="wcard__body">
+                  <span class="wcard__author">{w.author}</span>
+                  <span class="wcard__title">{w.title}</span>
+                  <span class="wcard__meta">
+                    {w.genre} · {w.year}
+                  </span>
+                  <span class="wcard__foot">
+                    <span class="wcard__count">{w.cards} досье</span>
+                    {/* Полоса прогресса рисуется только тем, кто уже начинал:
+                        пустая полоса у того, кто пришёл впервые, — это укор
+                        ни за что. */}
+                    <span class="wcard__prog" data-work-prog hidden>
+                      <span class="wcard__bar" data-work-bar />
+                      <span class="wcard__ratio" data-work-ratio />
+                    </span>
                   </span>
                 </span>
               </a>
@@ -70,28 +208,154 @@ const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeComp
       </ul>
     </section>
 
-    <section class="works__band works__band--soon" aria-labelledby="h-soon">
-      <h2 class="works__band-h" id="h-soon">Скоро</h2>
-      <p class="works__note">
-        Разбираем по одному. Что разберём следующим — решает голосование в
-        конце тест-дыры.
-      </p>
+    {/*
+      Раздел «Скоро» показывается, только пока в нём кто-то есть. Когда все
+      произведения из базы разобраны, заголовок с обещанием и пустая сетка
+      под ним — это не честность, а недоделка на главной странице.
+      Голосование за следующее произведение от этого не зависит: оно живёт
+      в конце тест-дыры и собирает спрос на то, чего в базе ещё нет.
+    */}
+    {poVolnam.length > 0 && (
+      <section class="works__band works__band--soon" aria-labelledby="h-soon">
+        <h2 class="works__band-h" id="h-soon">Скоро</h2>
+        <p class="works__note">
+          Разбираем по одному. Что разберём следующим — решает голосование в
+          конце тест-дыры.
+        </p>
 
-      <ul class="works__grid works__grid--soon">
-        {
-          poVolnam.map((w) => (
+        <ul class="works__grid works__grid--soon">
+          {poVolnam.map((w) => (
             <li>
               <span class="wcard wcard--soon" aria-disabled="true">
-                <span class="wcard__author">{w.author}</span>
-                <span class="wcard__title">{w.title}</span>
-                <span class="wcard__meta">
-                  {w.genre} · {w.year}
-                </span>
-                <span class="wcard__foot">
-                  <span class="wcard__count">{w.cards} досье</span>
-                  <span class="wcard__soon">скоро</span>
+                <span class="wcard__body">
+                  <span class="wcard__author">{w.author}</span>
+                  <span class="wcard__title">{w.title}</span>
+                  <span class="wcard__meta">
+                    {w.genre} · {w.year}
+                  </span>
+                  <span class="wcard__foot">
+                    <span class="wcard__count">{w.cards} досье</span>
+                    <span class="wcard__soon">скоро</span>
+                  </span>
                 </span>
               </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {/*
+      Продающий блок. Тёмное вино с кремовым и золотом — та же пара, что у
+      перехода лепестками и тёмных глав; по контрастному правилу палитры
+      (§2 дизайн-системы) на --wine-deep идут --ivory и --gold. Блок
+      выделяется среди бумажных секций, не вводя ни одного нового цвета.
+
+      Разметка держит оба состояния акции сразу: [data-aktsiya] — пока
+      скидка идёт, [data-posle] — когда закончилась. Переключает их
+      src/scripts/aktsiya.js по текущему времени посетителя.
+    */}
+    <section class="prodazha" aria-labelledby="h-prodazha">
+      <div class="prodazha__list">
+        <p class="prodazha__kicker" data-aktsiya hidden={!idyot}>Стартовая скидка −50%</p>
+
+        <h2 class="prodazha__h" id="h-prodazha">
+          До сих пор боишься <em class="prodazha__akcent">потерять баллы</em> на 2-м задании?
+        </h2>
+
+        <p class="prodazha__lead">
+          Хватит гадать, насколько хорошо ты помнишь произведения. Проверяй героев, цитаты и детали
+          сюжета в одном тренажёре. Готовься системно и закрывай пробелы до ЕГЭ.
+        </p>
+
+        <div class="prodazha__cena" data-aktsiya hidden={!idyot}>
+          <b class="prodazha__rub">{rubli(CENA_AKTSIYA)}</b>
+          <s class="prodazha__staraya">
+            {rubli(CENA_POSLE)}
+            <span class="prodazha__sr">— цена после стартовой акции</span>
+          </s>
+          <span class="prodazha__ekonomiya">
+            Экономия {rubli(CENA_AKTSIYA)} — только на старте подготовки
+          </span>
+        </div>
+
+        <p class="prodazha__god" data-aktsiya hidden={!idyot}>
+          Один доступ — целый год тренировок по литературе.
+        </p>
+
+        {/*
+          Срок. Текстом — для того, кто читает, и для скринридера; цифрами —
+          для того, кто смотрит. Сами цифры из озвучивания выключены: счётчик
+          секунд, прочитанный вслух, перебивает всё остальное на странице.
+        */}
+        <div class="prodazha__srok" data-aktsiya hidden={!idyot}>
+          <p class="prodazha__srok-t">
+            Стартовая скидка действует только до {SROK_SLOVAMI}. После этого полный доступ будет
+            стоить {rubli(CENA_POSLE)}.
+          </p>
+
+          <ul class="otschet" aria-hidden="true">
+            <li class="otschet__kl">
+              <span class="otschet__n" data-otschet-dni>—</span>
+              <span class="otschet__p" data-otschet-dni-slovo>дней</span>
+            </li>
+            <li class="otschet__kl">
+              <span class="otschet__n" data-otschet-chasy>—</span>
+              <span class="otschet__p" data-otschet-chasy-slovo>часов</span>
+            </li>
+            <li class="otschet__kl">
+              <span class="otschet__n" data-otschet-minuty>—</span>
+              <span class="otschet__p" data-otschet-minuty-slovo>минут</span>
+            </li>
+            <li class="otschet__kl">
+              <span class="otschet__n" data-otschet-sekundy>—</span>
+              <span class="otschet__p" data-otschet-sekundy-slovo>секунд</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="prodazha__act" data-aktsiya hidden={!idyot}>
+          <a
+            class="prodazha__kupit"
+            href={SSYLKA_OPLATY}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Получить доступ за {rubli(CENA_AKTSIYA)}
+            <span class="prodazha__strelka" aria-hidden="true">→</span>
+          </a>
+          <p class="prodazha__melko">Один платёж · 12 месяцев доступа · Без автопродления</p>
+          <p class="prodazha__uslovie">
+            {rubli(CENA_AKTSIYA)} за 12 месяцев доступа с момента оплаты. Разовый платёж, без
+            автопродления.
+          </p>
+        </div>
+
+        {/*
+          Акция кончилась. Кнопки здесь нет намеренно: многоразовый счёт
+          ЮKassa выставлен на 490 ₽ и списал бы их и после срока, а ссылки
+          на 980 ₽ пока не существует. Показывать оплату, которой нет,
+          нельзя, поэтому остаётся цена как сведение и способ написать.
+        */}
+        <div class="prodazha__posle" data-posle hidden={idyot}>
+          <p class="prodazha__posle-t">
+            Стартовая скидка закончилась {SROK_SLOVAMI}. Полный доступ — {rubli(CENA_POSLE)}.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq" aria-labelledby="h-faq">
+      <h2 class="faq__h" id="h-faq">Короткие ответы</h2>
+
+      <ul class="faq__list">
+        {
+          VOPROSY.map((v) => (
+            <li>
+              <details class="faq__item">
+                <summary class="faq__q">{v.q}</summary>
+                <p class="faq__a">{v.a}</p>
+              </details>
             </li>
           ))
         }
@@ -100,6 +364,9 @@ const poVolnam = [...skoro].sort((a, b) => a.wave - b.wave || a.title.localeComp
   </main>
 
   <script>
+    // mountAktsiya здесь не нужен: он поднимается в Shell на каждой
+    // странице — и на главной, и внутри замка. Второй вызов завёл бы
+    // второй интервал отсчёта на те же узлы.
     import { mountWorks } from '../scripts/works-grid.js';
     document.addEventListener('astro:page-load', () => mountWorks());
   </script>

@@ -3352,15 +3352,40 @@ body:not([data-screen='title']) .hdr {
   line-height: 1;
 }
 
+/*
+ * Размер подбирается под длину названия, а не только под ширину экрана.
+ * Два числа приходят из HeroTitle.astro: --ht-vsego — длина названия
+ * целиком, --ht-slovo — длина самого длинного слова.
+ *
+ * --ht-pole      доступная заголовку ширина: экран минус поля .hero,
+ *                и не шире её max-width.
+ * --ht-stroka    размер, при котором название влезает в одну строку.
+ *                Это предпочтение: пока оно выполнимо, заголовок стоит
+ *                одной строкой, как в макете.
+ * --ht-slovo-fit размер, при котором влезает самое длинное слово. Это
+ *                гарантия: даже когда название переносится, ни одно слово
+ *                за край не уходит. Раньше этого не было — стоял
+ *                white-space: nowrap, и «Облако в штанах» на телефоне
+ *                обрезалось с двух сторон.
+ *
+ * 0.5em и 0.56em — средняя ширина знака Prata: по названию целиком (там
+ * есть пробелы, они уже) и внутри слова. Проверено замером.
+ */
 .ht__word {
   position: relative;
   display: inline-block;
+  max-width: 100%;
   font-family: 'Prata', 'Playfair Display', Georgia, serif;
   font-weight: 400;
-  font-size: clamp(4.5rem, 16vw, 11.5rem);
+  --ht-pole: calc(min(100vw, 1400px) - 48px);
+  --ht-stroka: calc(var(--ht-pole) / (var(--ht-vsego) * 0.5));
+  --ht-slovo-fit: calc(var(--ht-pole) / (var(--ht-slovo) * 0.56));
+  font-size: min(11.5rem, 16vw, var(--ht-slovo-fit), max(var(--ht-stroka), 2.6rem));
   line-height: 0.96;
   letter-spacing: -0.012em;
-  white-space: nowrap;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   animation: ht-enter 900ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
 }
 
@@ -4066,9 +4091,14 @@ body:not([data-screen='title']) .hdr {
  * должна выглядеть торжественнее того, к чему ведёт.
  */
 .works {
+  /* Боковое поле названо, потому что от него зависит не только отступ:
+     продающий блок выходит в край экрана ровно на эту величину
+     отрицательным margin. Разойдутся — блок вылезет за край, и на
+     телефоне появится горизонтальная прокрутка. */
+  --pole: 16px;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 18px 16px 72px;
+  padding: 18px var(--pole) 72px;
 }
 
 .works__head {
@@ -4076,12 +4106,21 @@ body:not([data-screen='title']) .hdr {
   border-bottom: 1px solid var(--gold);
 }
 
+/*
+ * Кегль ниже прежнего: здесь стоит не название сайта в два слова, а вопрос
+ * в десять. В 3.4rem «Сюжетная дыра» читалась одной строкой, а этот вопрос
+ * на телефоне занял бы пять и съел первый экран целиком.
+ */
 .works__h {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
+  max-width: 26ch;
   font-family: var(--display);
-  font-size: clamp(2.1rem, 9vw, 3.4rem);
-  line-height: 1.04;
-  color: var(--wine-deep);
+  font-size: clamp(1.75rem, 7.2vw, 2.75rem);
+  line-height: 1.08;
+  /* Чернильный, а не винный: выделенные слова внутри — бордовые, и на
+     бордовом же фоне они просто не читались бы как выделение. */
+  color: var(--ink);
+  text-wrap: balance;
 }
 
 .works__lead {
@@ -4148,15 +4187,53 @@ body:not([data-screen='title']) .hdr {
  */
 .wcard {
   display: grid;
-  gap: 5px;
-  align-content: start;
+  grid-template-rows: auto 1fr;
   min-height: 164px;
-  padding: 16px 16px 14px;
   border: 1px solid var(--hair);
   border-top: 2px solid var(--gold);
   text-decoration: none;
-
   background-color: var(--paper);
+}
+
+/*
+ * Обложка — кадр из титульного экрана произведения: ученик видит на
+ * главной то самое изображение, которое откроется по переходу.
+ *
+ * Отдельный файл в 480 пикселей, а не экран в 900: карточек на главной
+ * двадцать, и экранами страница потянула бы полтора мегабайта
+ * (scripts/oblozhki.mjs). Размеры заданы атрибутами, чтобы место под
+ * картинку было занято до её загрузки и список не прыгал.
+ */
+.wcard__cover {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid var(--hair);
+  background: var(--ivory);
+}
+
+.wcard__cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Бумага у нас тёплая, а экраны сняты холоднее: лёгкая сепия сажает
+     фотографию на тот же лист, что и текст. */
+  filter: sepia(0.14) saturate(0.92);
+  transition: transform 520ms cubic-bezier(0.2, 0.74, 0.22, 1);
+}
+
+/*
+ * Заливка слева наезжает на текстовую часть, а не на всю карточку: тот же
+ * жест, что у кнопок и строк голосования, но поверх фотографии он выглядел
+ * бы грязным пятном.
+ */
+.wcard__body {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  padding: 14px 16px 14px;
+
   background-image: linear-gradient(
     to right,
     rgba(176, 141, 79, 0.16) 0 40%,
@@ -4169,8 +4246,22 @@ body:not([data-screen='title']) .hdr {
 }
 
 @media (hover: hover) {
-  .wcard:not(.wcard--soon):hover {
+  .wcard:not(.wcard--soon):hover .wcard__body {
     background-position: 0 0;
+  }
+
+  .wcard:not(.wcard--soon):hover .wcard__cover img {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wcard__cover img {
+    transition: none;
+  }
+
+  .wcard:hover .wcard__cover img {
+    transform: none;
   }
 }
 
@@ -4223,9 +4314,13 @@ body:not([data-screen='title']) .hdr {
 /* Произведение, которого ещё нет, не притворяется ссылкой: ни курсора,
    ни наезда заливки. Видно, что оно будет, и видно, что его пока нет. */
 .wcard--soon {
-  background-image: none;
   border-top-color: var(--hair);
   cursor: default;
+}
+
+/* Заливка живёт на .wcard__body, значит и гасить её надо там. */
+.wcard--soon .wcard__body {
+  background-image: none;
 }
 
 .wcard--soon .wcard__title,
@@ -4263,6 +4358,489 @@ body:not([data-screen='title']) .hdr {
   .wcard {
     transition: none;
   }
+}
+
+/* ─── Главная: продающие секции ────────────────────────────────────────
+ *
+ * Цвета — только из §2 дизайн-системы, ни одного нового токена.
+ * Бордовый акцент — --wine (#6B1B24): заказчик просил #651522, разница
+ * между ними на глаз неразличима, а второй почти такой же бордовый в
+ * палитре означал бы два разных «главных красных» в одном продукте.
+ */
+
+.works__kicker {
+  margin: 0 0 12px;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.works__akcent {
+  font-style: inherit;
+  color: var(--wine);
+}
+
+.works__korotko {
+  margin: 16px 0 0;
+  max-width: 44ch;
+  font-family: var(--display);
+  font-size: clamp(1.0625rem, 4vw, 1.25rem);
+  line-height: 1.4;
+  color: var(--wine-deep);
+  text-wrap: pretty;
+}
+
+/* ── «Знакомо?» ── */
+
+.boli {
+  margin-top: 40px;
+}
+
+.boli__h {
+  margin: 0 0 18px;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 6.4vw, 2rem);
+  line-height: 1.1;
+  color: var(--wine-deep);
+}
+
+.boli__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .boli__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Лист, подшитый к делу: тот же жест, что у карточки произведения, —
+   бумага, золотой волосок сверху, ни тени, ни скругления. */
+.boli__card {
+  padding: 15px 16px 16px;
+  border: 1px solid var(--hair);
+  border-top: 2px solid var(--gold);
+  background: var(--paper);
+}
+
+.boli__card-h {
+  margin: 0 0 7px;
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  line-height: 1.22;
+  color: var(--wine);
+  text-wrap: balance;
+}
+
+.boli__card-t {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.boli__itog {
+  margin: 18px 0 0;
+  max-width: 56ch;
+  padding-left: 14px;
+  border-left: 1px solid var(--gold);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1rem, 3.8vw, 1.125rem);
+  line-height: 1.5;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* ── «Всё, чтобы перестать путаться» ── */
+
+.umeet {
+  margin-top: 44px;
+}
+
+.umeet__h {
+  margin: 0 0 20px;
+  max-width: 34ch;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 6.4vw, 2rem);
+  line-height: 1.1;
+  color: var(--wine-deep);
+  text-wrap: balance;
+}
+
+.umeet__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 720px) {
+  .umeet__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+  }
+}
+
+/* Римская цифра — та же, что в шапке произведения над вкладкой: I досье,
+   II чек, III дыра. Ученик видит здесь ровно те три вкладки, которые
+   откроются внутри, и в том же порядке. */
+.umeet__card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
+  align-items: baseline;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+}
+
+.umeet__nomer {
+  grid-row: 1 / span 2;
+  font-family: var(--display);
+  font-size: 1.625rem;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.umeet__card-h {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.1875rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.umeet__card-t {
+  margin: 0;
+  grid-column: 2;
+  font-size: 0.9375rem;
+  line-height: 1.52;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+/* ── Продающий блок ── */
+
+/*
+ * Тёмное вино с кремовым и золотом: по контрастному правилу §2 на
+ * --wine-deep идут --ivory и --gold. Блок выделяется среди бумажных
+ * секций, не вводя ни одного нового цвета.
+ *
+ * Выходит за поля .works в край экрана отрицательными отступами — так он
+ * читается как отдельная вкладка в архиве, а не как ещё одна карточка.
+ */
+.prodazha {
+  margin-top: 54px;
+  margin-inline: calc(var(--pole) * -1);
+  padding: 34px var(--pole) 36px;
+  background: var(--wine-deep);
+  color: var(--ivory);
+  border-block: 2px solid var(--gold);
+}
+
+.prodazha__list {
+  max-width: 62ch;
+  margin-inline: auto;
+}
+
+.prodazha__kicker {
+  margin: 0 0 14px;
+  font-family: var(--micro);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.prodazha__h {
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: clamp(1.625rem, 7vw, 2.375rem);
+  line-height: 1.08;
+  color: var(--ivory);
+  text-wrap: balance;
+}
+
+/* На тёмном бордовый акцент не читается, и подменять его нельзя тихо:
+   роль выделенных слов берёт золото — второй цвет этой же пары. */
+.prodazha__akcent {
+  font-style: inherit;
+  color: var(--gold);
+}
+
+.prodazha__lead {
+  margin: 0 0 24px;
+  max-width: 52ch;
+  font-size: clamp(0.9375rem, 3.8vw, 1.0625rem);
+  line-height: 1.55;
+  color: rgba(244, 238, 227, 0.86);
+  text-wrap: pretty;
+}
+
+.prodazha__cena {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.prodazha__rub {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 13vw, 4rem);
+  line-height: 1;
+  color: var(--ivory);
+}
+
+.prodazha__staraya {
+  font-family: var(--display);
+  font-size: clamp(1.125rem, 5vw, 1.5rem);
+  color: rgba(244, 238, 227, 0.62);
+  text-decoration-thickness: 1px;
+}
+
+/* Перечёркнутая цена без объяснения — просто число: вслух зачёркивание не
+   читается. Строка видна только скринридеру. */
+.prodazha__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.prodazha__ekonomiya {
+  flex-basis: 100%;
+  font-family: var(--micro);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+
+.prodazha__god {
+  margin: 0 0 24px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1rem, 4vw, 1.125rem);
+  color: rgba(244, 238, 227, 0.9);
+}
+
+.prodazha__srok {
+  margin-bottom: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(176, 141, 79, 0.42);
+}
+
+.prodazha__srok-t {
+  margin: 0 0 16px;
+  max-width: 50ch;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(244, 238, 227, 0.84);
+  text-wrap: pretty;
+}
+
+/* Отсчёт: четыре клетки в строку влезают и на 360 — ширина у них общая,
+   от сетки, а не выставлена пикселями под одно слово. */
+.otschet {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-width: 24rem;
+}
+
+.otschet__kl {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 10px 2px 9px;
+  border: 1px solid rgba(176, 141, 79, 0.42);
+  background: rgba(244, 238, 227, 0.05);
+}
+
+.otschet__n {
+  font-family: var(--display);
+  font-size: clamp(1.375rem, 6.4vw, 1.75rem);
+  line-height: 1;
+  color: var(--ivory);
+  font-variant-numeric: tabular-nums;
+}
+
+.otschet__p {
+  font-family: var(--micro);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: center;
+}
+
+/* Кнопка. На телефоне во всю ширину: это главное действие страницы, и
+   промахнуться по нему пальцем нельзя. */
+.prodazha__kupit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 0 26px;
+  background: var(--gold);
+  color: var(--wine-deep);
+  text-decoration: none;
+  font-family: var(--display);
+  font-size: clamp(1.0625rem, 4.4vw, 1.25rem);
+  text-align: center;
+  transition: background-color 160ms ease-out, color 160ms ease-out;
+}
+
+@media (min-width: 560px) {
+  .prodazha__kupit {
+    display: inline-flex;
+    width: auto;
+  }
+}
+
+@media (hover: hover) {
+  .prodazha__kupit:hover {
+    background: var(--ivory);
+  }
+}
+
+/* Срок акции прошёл: ссылку снял скрипт, и кнопка не должна выглядеть
+   нажимаемой. */
+.prodazha__kupit[aria-disabled='true'] {
+  background: rgba(244, 238, 227, 0.18);
+  color: rgba(244, 238, 227, 0.5);
+  pointer-events: none;
+}
+
+.prodazha__strelka {
+  font-family: var(--micro);
+  font-size: 1rem;
+}
+
+.prodazha__melko {
+  margin: 12px 0 0;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.prodazha__uslovie {
+  margin: 10px 0 0;
+  max-width: 48ch;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(244, 238, 227, 0.68);
+  text-wrap: pretty;
+}
+
+.prodazha__posle-t {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(244, 238, 227, 0.88);
+  text-wrap: pretty;
+}
+
+/* ── Короткие ответы ── */
+
+.faq {
+  margin-top: 44px;
+}
+
+.faq__h {
+  margin: 0 0 16px;
+  font-family: var(--display);
+  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
+  line-height: 1.1;
+  color: var(--wine-deep);
+}
+
+.faq__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 62ch;
+}
+
+.faq__item {
+  border-top: 1px solid var(--hair);
+}
+
+.faq__list > li:last-child .faq__item {
+  border-bottom: 1px solid var(--hair);
+}
+
+.faq__q {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 0;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  color: var(--ink);
+  list-style: none;
+}
+
+.faq__q::-webkit-details-marker {
+  display: none;
+}
+
+/* Знак раскрытия — золотой плюс, который становится минусом: треугольник
+   браузера по умолчанию выбивается из начертания всего остального. */
+.faq__q::after {
+  content: '+';
+  margin-left: auto;
+  font-family: var(--display);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.faq__item[open] .faq__q::after {
+  content: '–';
+}
+
+.faq__item[open] .faq__q {
+  color: var(--wine);
+}
+
+.faq__a {
+  margin: 0 0 16px;
+  padding-right: 28px;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-wrap: pretty;
 }
 
 /* ─── Силуэт вместо снимка ─── */

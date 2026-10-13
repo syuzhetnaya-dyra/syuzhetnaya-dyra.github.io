@@ -4101,37 +4101,192 @@ body:not([data-screen='title']) .hdr {
   padding: 18px var(--pole) 72px;
 }
 
-.works__head {
-  padding: 26px 0 30px;
-  border-bottom: 1px solid var(--gold);
+/*
+ * Первый экран главной.
+ *
+ * Коллаж — настоящая картинка, а не background-image: у картинки есть
+ * srcset, и телефон качает версию в 900 пикселей вместо 1680. На узком
+ * экране она стоит полосой над текстом, на широком уезжает фоном под
+ * текст — у присланного коллажа левая половина пустая, бумажная, туда
+ * текст и ложится.
+ *
+ * Выходит в край экрана отрицательным отступом, как продающий блок: от
+ * того же --pole, объявленного у .works.
+ */
+.glav {
+  position: relative;
+  margin-top: 10px;
+  margin-inline: calc(var(--pole) * -1);
+  border-block: 1px solid var(--gold);
+  background: var(--ivory);
+  overflow: hidden;
 }
 
 /*
- * Кегль ниже прежнего: здесь стоит не название сайта в два слова, а вопрос
- * в десять. В 3.4rem «Сюжетная дыра» читалась одной строкой, а этот вопрос
- * на телефоне занял бы пять и съел первый экран целиком.
+ * Полоса чуть ниже, чем сам кадр: у коллажа нижняя треть — пустая бумага,
+ * и целиком он отодвигал бы кнопку на первом экране вниз зря. Обрезается
+ * по вертикали, по горизонтали виден весь — снимки и сургучная печать
+ * стоят у правого края, терять их нельзя.
  */
-.works__h {
-  margin: 0 0 12px;
-  max-width: 26ch;
+.glav__fon {
+  display: block;
+  width: 100%;
+  /*
+   * height: auto обязателен. У картинки стоят атрибуты width и height —
+   * они нужны, чтобы место под неё было занято до загрузки и список не
+   * прыгал. Но атрибут height действует как правило height: 865px, и
+   * пока его не сбросить, aspect-ratio ниже не работает вообще:
+   * обе стороны уже заданы, подрезать нечего.
+   */
+  height: auto;
+  aspect-ratio: 16 / 6.4;
+  object-fit: cover;
+  object-position: center 32%;
+}
+
+.glav__text {
+  position: relative;
+  z-index: 2;
+  padding: 22px var(--pole) 26px;
+}
+
+.glav__h {
+  margin: 0 0 10px;
+  max-width: 24ch;
   font-family: var(--display);
-  font-size: clamp(1.75rem, 7.2vw, 2.75rem);
+  font-size: clamp(1.75rem, 7.2vw, 2.625rem);
   line-height: 1.08;
-  /* Чернильный, а не винный: выделенные слова внутри — бордовые, и на
-     бордовом же фоне они просто не читались бы как выделение. */
+  /* Чернильный, а не винный: выделенные слова внутри бордовые, и на
+     бордовом же они не читались бы как выделение. */
   color: var(--ink);
   text-wrap: balance;
 }
 
-.works__lead {
-  margin: 0;
-  max-width: 52ch;
+.glav__akcent {
+  font-style: inherit;
+  color: var(--wine);
+}
+
+.glav__lead {
+  margin: 0 0 8px;
+  max-width: 40ch;
   font-family: var(--display);
   font-style: italic;
-  font-size: clamp(1rem, 3.6vw, 1.1875rem);
-  line-height: 1.5;
+  font-size: clamp(1rem, 3.8vw, 1.1875rem);
+  line-height: 1.45;
   color: var(--ink-soft);
   text-wrap: pretty;
+}
+
+.glav__korotko {
+  margin: 0 0 20px;
+  max-width: 38ch;
+  font-family: var(--display);
+  font-size: clamp(1.0625rem, 4vw, 1.1875rem);
+  line-height: 1.35;
+  color: var(--wine-deep);
+  text-wrap: pretty;
+}
+
+/* Кнопка на первом экране — тот же жест, что в продающем блоке, только на
+   светлом: вино на бумаге, а не золото на вине. */
+.glav__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 0 24px;
+  background: var(--wine);
+  color: var(--ivory);
+  text-decoration: none;
+  font-family: var(--display);
+  font-size: clamp(1.0625rem, 4.2vw, 1.1875rem);
+  text-align: center;
+  transition: background-color 160ms ease-out;
+}
+
+@media (min-width: 560px) {
+  .glav__cta {
+    display: inline-flex;
+    width: auto;
+  }
+}
+
+@media (hover: hover) {
+  .glav__cta:hover {
+    background: var(--wine-deep);
+  }
+}
+
+.glav__cta[aria-disabled='true'] {
+  background: var(--hair);
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.glav__strelka {
+  font-family: var(--micro);
+  font-size: 1rem;
+}
+
+.glav__melko {
+  margin: 10px 0 0;
+  max-width: 46ch;
+  font-family: var(--micro);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gold-text);
+  text-wrap: pretty;
+}
+
+/*
+ * Широкий экран: коллаж уходит под текст целиком, текст занимает левую
+ * половину — ту, где у коллажа пустая бумага.
+ *
+ * Светлая подложка поверх снимка обязательна: без неё контраст текста
+ * зависел бы от того, как именно обрезался кадр на данной ширине, а
+ * проверять вёрстку «на глаз на моём экране» мы не умеем.
+ */
+@media (min-width: 760px) {
+  .glav {
+    display: grid;
+    align-items: center;
+    min-height: 26rem;
+  }
+
+  .glav__fon {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    /* Снимает подрезку, заданную для узкого экрана: тут кадр растягивается
+       на весь блок. */
+    aspect-ratio: auto;
+    object-fit: cover;
+    object-position: right center;
+  }
+
+  .glav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to right,
+      var(--ivory) 0 28%,
+      rgba(244, 238, 227, 0.78) 46%,
+      rgba(244, 238, 227, 0) 64%
+    );
+  }
+
+  .glav__text {
+    max-width: 36rem;
+    padding: 44px var(--pole);
+  }
 }
 
 .works__band {
@@ -4368,35 +4523,10 @@ body:not([data-screen='title']) .hdr {
  * палитре означал бы два разных «главных красных» в одном продукте.
  */
 
-.works__kicker {
-  margin: 0 0 12px;
-  font-family: var(--micro);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold-text);
-}
-
-.works__akcent {
-  font-style: inherit;
-  color: var(--wine);
-}
-
-.works__korotko {
-  margin: 16px 0 0;
-  max-width: 44ch;
-  font-family: var(--display);
-  font-size: clamp(1.0625rem, 4vw, 1.25rem);
-  line-height: 1.4;
-  color: var(--wine-deep);
-  text-wrap: pretty;
-}
-
 /* ── «Знакомо?» ── */
 
 .boli {
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
 .boli__h {
@@ -4463,7 +4593,7 @@ body:not([data-screen='title']) .hdr {
 /* ── «Всё, чтобы перестать путаться» ── */
 
 .umeet {
-  margin-top: 44px;
+  margin-top: 36px;
 }
 
 .umeet__h {

@@ -9,17 +9,28 @@
  * скрытую картинку браузер всё равно скачает, а несовпавший source — нет.
  * Размеры проставлены у обоих, иначе пропорции знака взялись бы от
  * начертания и он прыгал бы при загрузке.
+ *
+ * polnyy — показывать начертание на любой ширине. Так стоит на главной:
+ * там в шапке нет вкладок произведения, и место, за которое начертание
+ * уступало, никем не занято. Знак без названия на первом экране сайта
+ * ничего не говорит человеку, пришедшему из тиктока.
  */
 import { asset } from '../scripts/paths.js';
+
+const { polnyy = false } = Astro.props;
 ---
 
 <picture class="logo">
-  <source
-    media="(max-width: 620px)"
-    srcset={asset('brand/logo-mark.png')}
-    width="84"
-    height="96"
-  />
+  {
+    !polnyy && (
+      <source
+        media="(max-width: 620px)"
+        srcset={asset('brand/logo-mark.png')}
+        width="84"
+        height="96"
+      />
+    )
+  }
   <img
     class="logo__img"
     src={asset('brand/logo-full.png')}

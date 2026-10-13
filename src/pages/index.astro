@@ -111,18 +111,62 @@ const VOPROSY = [
   <Header />
 
   <main class="works">
-    <header class="works__head">
-      <p class="works__kicker">Сюжетная дыра</p>
-      <h1 class="works__h">
-        До сих пор боишься <em class="works__akcent">потерять баллы</em> на 2-м задании ЕГЭ по
-        литературе?
-      </h1>
-      <p class="works__lead">
-        Прочитал произведение, но путаешь героев, цитаты и важные детали? Не оставляй пробелы в
-        знаниях до экзамена. Разбирай персонажей, вспоминай сюжет и проверяй себя на заданиях, чтобы
-        увереннее чувствовать себя на ЕГЭ.
-      </p>
-      <p class="works__korotko">Не просто перечитывай. Проверяй, что действительно запомнил.</p>
+    {/*
+      Первый экран. Коллаж — настоящая картинка, а не background-image: на
+      телефоне он стоит полосой над текстом, на широком экране уезжает
+      фоном под текст, и в обоих случаях браузер качает подходящий размер
+      сам. У background-image выбрать размер нечем.
+
+      Текста ровно столько, чтобы стало понятно, и ни строкой больше:
+      вопрос, одна фраза про боль, обещание — и кнопка. Названия сайта тут
+      нет: оно стоит в шапке рядом со знаком.
+    */}
+    <header class="glav">
+      <img
+        class="glav__fon"
+        src={asset('hero/glavnaya-900.jpg')}
+        srcset={`${asset('hero/glavnaya-900.jpg')} 900w, ${asset('hero/glavnaya-1680.jpg')} 1680w`}
+        sizes="100vw"
+        alt=""
+        width="1680"
+        height="865"
+        fetchpriority="high"
+        decoding="async"
+      />
+
+      <div class="glav__text">
+        <h1 class="glav__h">
+          До сих пор боишься <em class="glav__akcent">потерять баллы</em> на 2-м задании ЕГЭ по
+          литературе?
+        </h1>
+
+        <p class="glav__lead">
+          Прочитал произведение, но путаешь героев, цитаты и важные детали?
+        </p>
+
+        <p class="glav__korotko">Не просто перечитывай. Проверяй, что действительно запомнил.</p>
+
+        <div class="glav__act" data-aktsiya hidden={!idyot}>
+          <a
+            class="glav__cta"
+            href={SSYLKA_OPLATY}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Получить доступ за {rubli(CENA_AKTSIYA)}
+            <span class="glav__strelka" aria-hidden="true">→</span>
+          </a>
+          <p class="glav__melko">
+            Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)} · «Ионыч» открыт всем
+          </p>
+        </div>
+
+        <div data-posle hidden={idyot}>
+          <p class="glav__melko">
+            Стартовая скидка закончилась. Полный доступ — {rubli(CENA_POSLE)}. «Ионыч» открыт всем.
+          </p>
+        </div>
+      </div>
     </header>
 
     <section class="boli" aria-labelledby="h-boli">

@@ -20,7 +20,7 @@ import Shell from '../layouts/Shell.astro';
 import Header from '../components/Header.astro';
 import { works } from '../data/works.js';
 import { to, asset } from '../scripts/paths.js';
-import { SSYLKA_OPLATY } from '../data/dostup.js';
+import { SSYLKA_OPLATY, BESPLATNO } from '../data/dostup.js';
 import {
   CENA_AKTSIYA,
   CENA_POSLE,
@@ -29,7 +29,20 @@ import {
   rubli,
 } from '../data/aktsiya.js';
 
-const otkryty = works.filter((w) => w.status === 'published');
+/*
+ * «Ионыч» вынесен из сетки и стоит над ней отдельной широкой карточкой.
+ * В общем ряду он ничем не отличался от платных, и бесплатная версия
+ * просто не находилась: человек видел двадцать одинаковых карточек и не
+ * понимал, что одну из них можно открыть целиком и сейчас.
+ *
+ * Какое произведение бесплатно, решает src/data/dostup.js — тот же
+ * список, по которому работает замок. Держать это в двух местах нельзя:
+ * разойдутся, и на главной будет обещано одно, а открыто другое.
+ */
+const besplatnoe = works.find((w) => w.status === 'published' && BESPLATNO.includes(w.slug));
+const otkryty = works.filter(
+  (w) => w.status === 'published' && !BESPLATNO.includes(w.slug)
+);
 const skoro = works.filter((w) => w.status !== 'published');
 
 // Волны — наш внутренний порядок работы, ученику он ни о чём не говорит.
@@ -156,26 +169,73 @@ const VOPROSY = [
       </p>
 
       <div class="glav__act" data-aktsiya hidden={!idyot}>
-        <a class="glav__cta" href={SSYLKA_OPLATY} target="_blank" rel="noopener noreferrer">
+        {/*
+          Кнопка первого экрана ведёт не в ЮKassa, а к бордовому блоку
+          ниже: там цена, срок и что входит. Платить, не дочитав до этого,
+          человеку незачем — а кнопка оплаты стоит там же, в блоке.
+        */}
+        <a class="glav__cta" href="#h-prodazha">
           Получить доступ за {rubli(CENA_AKTSIYA)}
           <span class="glav__strelka" aria-hidden="true">→</span>
         </a>
         <p class="glav__melko">
-          Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)} · «Ионыч» открыт всем
+          Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)}
         </p>
       </div>
 
       <div data-posle hidden={idyot}>
         <p class="glav__melko">
-          Стартовая скидка закончилась. Полный доступ — {rubli(CENA_POSLE)}. «Ионыч» открыт всем.
+          Стартовая скидка закончилась. Полный доступ — {rubli(CENA_POSLE)}.
         </p>
       </div>
     </div>
   </section>
 
   <main class="works">
+    {/*
+      Бесплатное произведение — отдельной широкой карточкой над сеткой, с
+      обложкой во всю её ширину. Это витрина: человек должен увидеть весь
+      продукт целиком и бесплатно, прежде чем платить.
+    */}
+    {besplatnoe && (
+      <section class="free" aria-labelledby="h-free">
+        <h2 class="works__band-h" id="h-free">Бесплатно и целиком</h2>
+
+        <a
+          class="free__card"
+          href={to(`${besplatnoe.slug}/`)}
+          data-work-card={besplatnoe.slug}
+          data-work-total={besplatnoe.cards}
+          data-petal-link
+        >
+          <span class="free__cover">
+            <img
+              src={asset(`hero/cover/${besplatnoe.slug}.webp`)}
+              alt=""
+              width="480"
+              height="270"
+              decoding="async"
+            />
+          </span>
+          <span class="free__body">
+            <span class="free__znak">Бесплатно</span>
+            <span class="free__author">{besplatnoe.author}</span>
+            <span class="free__title">{besplatnoe.title}</span>
+            <span class="free__t">
+              Все три раздела открыты без кода: {besplatnoe.cards} досье с цитатами, сюжетный чек и
+              тест-дыра. Посмотрите, из чего состоит тренажёр, прежде чем платить.
+            </span>
+            <span class="free__act">
+              Открыть «{besplatnoe.title}»
+              <span class="free__strelka" aria-hidden="true">→</span>
+            </span>
+          </span>
+        </a>
+      </section>
+    )}
+
     <section class="works__band" aria-labelledby="h-open">
-      <h2 class="works__band-h" id="h-open">Открыто</h2>
+      <h2 class="works__band-h" id="h-open">Остальные произведения</h2>
 
       <ul class="works__grid">
         {

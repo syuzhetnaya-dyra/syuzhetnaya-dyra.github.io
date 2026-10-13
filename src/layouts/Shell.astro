@@ -107,6 +107,7 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
       {
         podZamkom && (
           <form class="zamok" data-zamok-forma hidden>
+            <div class="zamok__list">
             <p class="zamok__title">Нужен код доступа</p>
 
             {
@@ -210,6 +211,7 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
             <p class="zamok__snoska">
               Код вводится один раз на этом устройстве. Мы не спрашиваем ни почту, ни имя.
             </p>
+            </div>
           </form>
         )
       }

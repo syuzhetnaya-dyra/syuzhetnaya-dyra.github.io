@@ -10,7 +10,8 @@
     "build:preview": "node scripts/preview.mjs",
     "sverka": "node scripts/sverka.mjs",
     "works": "node scripts/works.mjs",
-    "kod": "node scripts/kody.mjs"
+    "kod": "node scripts/kody.mjs",
+    "vydat": "node scripts/vydat.mjs"
   },
   "dependencies": {
     "astro": "^5.14.1",

@@ -71,8 +71,20 @@ async function raskryt(klyuchBase64) {
    * Скрипты страницы монтируются по astro:page-load и ничего не знают про
    * замок. Содержимое появилось позже — значит, событие надо повторить,
    * иначе чек и тест-дыра останутся мёртвой разметкой.
+   *
+   * Но не раньше, чем эти скрипты успеют подписаться. У вернувшегося
+   * покупателя ключ уже лежит в localStorage, и расшифровка проходит
+   * мгновенно — посреди разбора страницы, когда модули ещё не выполнены.
+   * Событие тогда уходит в пустоту: колода не листается, вкладки не
+   * переключаются, хотя разметка на месте. Модули выполняются до
+   * DOMContentLoaded, поэтому ждём его.
    */
-  document.dispatchEvent(new Event('astro:page-load'));
+  const razoslat = () => document.dispatchEvent(new Event('astro:page-load'));
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', razoslat, { once: true });
+  } else {
+    razoslat();
+  }
   return true;
 }
 

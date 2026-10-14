@@ -78,7 +78,29 @@ for (const put of podzamkom) {
     process.exit(1);
   }
 
-  const telo = html.slice(a + METKA_NACHALO.length, b);
+  let telo = html.slice(a + METKA_NACHALO.length, b);
+
+  /*
+   * Скрипты страницы вынимаем из-под шифра и ставим рядом, снаружи.
+   *
+   * Astro складывает <script> из .astro-файла страницы внутрь её разметки,
+   * то есть между наших меток. Зашифрованное содержимое вставляется потом
+   * через insertAdjacentHTML, а скрипты, вставленные как HTML, браузер
+   * НЕ исполняет — это правило HTML, а не наша оплошность. Из-за этого на
+   * платных страницах не поднималось ничего своего: колода досье не
+   * листалась, чек и тест-дыра оставались мёртвой разметкой. Видно это
+   * было только по купленному доступу, поэтому и нашлось не сразу.
+   *
+   * Прятать тут нечего: это ссылки на публичные файлы в /_astro/, те же
+   * самые, что у бесплатного «Ионыча». Секрет — содержимое, а не адрес
+   * сборки.
+   */
+  const snaruzhi = [];
+  telo = telo.replace(/<script\b[^>]*\bsrc="[^"]*"[^>]*>\s*<\/script>/g, (tag) => {
+    snaruzhi.push(tag);
+    return '';
+  });
+
   const iv = randomBytes(12);
   const shifr = createCipheriv('aes-256-gcm', klyuch, iv);
   const kuski = Buffer.concat([shifr.update(telo, 'utf8'), shifr.final(), shifr.getAuthTag()]);
@@ -88,7 +110,11 @@ for (const put of podzamkom) {
     JSON.stringify({ iv: iv.toString('base64'), telo: kuski.toString('base64') }) +
     `</script>`;
 
-  writeFileSync(put, html.slice(0, a) + vmesto + html.slice(b + METKA_KONEC.length), 'utf8');
+  writeFileSync(
+    put,
+    html.slice(0, a) + vmesto + snaruzhi.join('') + html.slice(b + METKA_KONEC.length),
+    'utf8'
+  );
   zashifrovano += 1;
   bukv += telo.length;
 }

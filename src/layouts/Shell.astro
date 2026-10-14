@@ -5,7 +5,15 @@ import '../styles/world.css';
 import '../styles/cinematic.css';
 import { asset } from '../scripts/paths.js';
 
-import { platno, METKA_NACHALO, METKA_KONEC, SSYLKA_OPLATY, KONTAKTY } from '../data/dostup.js';
+import {
+  platno,
+  METKA_NACHALO,
+  METKA_KONEC,
+  SSYLKA_OPLATY,
+  KONTAKTY,
+  PAUZA_PRODAZH,
+  PAUZA_TEKST,
+} from '../data/dostup.js';
 import { CENA_AKTSIYA, CENA_POSLE, SROK_SLOVAMI, aktsiyaIdyot, rubli } from '../data/aktsiya.js';
 import { to } from '../scripts/paths.js';
 
@@ -128,17 +136,23 @@ const canonical = origin ? new URL(Astro.url.pathname, origin).href : '';
                         отключается, а не меняет цену.
                       */}
                       <div data-aktsiya hidden={!aktsiya}>
-                        <a
-                          class="zamok__kupit"
-                          href={SSYLKA_OPLATY}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Получить доступ за {rubli(CENA_AKTSIYA)}
-                        </a>
-                        <p class="zamok__kak">
-                          Стартовая скидка — только до {SROK_SLOVAMI}. Код придёт после оплаты.
-                        </p>
+                        {PAUZA_PRODAZH ? (
+                          <p class="pauza">{PAUZA_TEKST}</p>
+                        ) : (
+                          <Fragment>
+                            <a
+                              class="zamok__kupit"
+                              href={SSYLKA_OPLATY}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Получить доступ за {rubli(CENA_AKTSIYA)}
+                            </a>
+                            <p class="zamok__kak">
+                              Стартовая скидка — только до {SROK_SLOVAMI}. Код придёт после оплаты.
+                            </p>
+                          </Fragment>
+                        )}
                       </div>
 
                       <div data-posle hidden={aktsiya}>

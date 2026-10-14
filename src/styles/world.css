@@ -4380,7 +4380,7 @@ body:not([data-screen='title']):not([data-screen='works']) .hdr {
   width: 100%;
   height: 100%;
   aspect-ratio: 16 / 9;
-  object-fit: cover;
+  object-fit: contain;
   /* Бумага тёплая, экраны сняты холоднее: лёгкая сепия сажает фотографию
      на тот же лист, что и текст. */
   filter: sepia(0.14) saturate(0.92);
@@ -4555,7 +4555,10 @@ body:not([data-screen='title']):not([data-screen='works']) .hdr {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* contain, а не cover: обложка не должна обрезать то, что на ней
+     нарисовано. Если снимок иной пропорции, чем рамка, по краям видна
+     бумага — это лучше, чем срезанное лицо. */
+  object-fit: contain;
   /* Бумага у нас тёплая, а экраны сняты холоднее: лёгкая сепия сажает
      фотографию на тот же лист, что и текст. */
   filter: sepia(0.14) saturate(0.92);
@@ -5412,4 +5415,27 @@ body:not([data-screen='title']):not([data-screen='works']) .hdr {
   font-family: var(--micro);
   font-size: 0.86em;
   white-space: nowrap;
+}
+
+/* ── Пауза продаж ──────────────────────────────────────────────────────
+ *
+ * Стоит на месте кнопок оплаты, пока PAUZA_PRODAZH в src/data/dostup.js
+ * равно true. Поле ввода кода пауза не трогает: уже оплатившие открывают
+ * доступ как прежде.
+ */
+.pauza {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--gold);
+  background: rgba(176, 141, 79, 0.1);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* В бордовом блоке та же рамка читается наоборот: бумага тут тёмная. */
+.pauza--temno {
+  background: rgba(244, 238, 227, 0.08);
+  color: var(--ivory);
 }

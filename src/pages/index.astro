@@ -20,7 +20,7 @@ import Shell from '../layouts/Shell.astro';
 import Header from '../components/Header.astro';
 import { works } from '../data/works.js';
 import { to, asset } from '../scripts/paths.js';
-import { SSYLKA_OPLATY, BESPLATNO } from '../data/dostup.js';
+import { SSYLKA_OPLATY, BESPLATNO, PAUZA_PRODAZH, PAUZA_TEKST } from '../data/dostup.js';
 import {
   CENA_AKTSIYA,
   CENA_POSLE,
@@ -174,13 +174,19 @@ const VOPROSY = [
           ниже: там цена, срок и что входит. Платить, не дочитав до этого,
           человеку незачем — а кнопка оплаты стоит там же, в блоке.
         */}
-        <a class="glav__cta" href="#h-prodazha">
-          Получить доступ за {rubli(CENA_AKTSIYA)}
-          <span class="glav__strelka" aria-hidden="true">→</span>
-        </a>
-        <p class="glav__melko">
-          Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)}
-        </p>
+        {PAUZA_PRODAZH ? (
+          <p class="pauza">{PAUZA_TEKST}</p>
+        ) : (
+          <Fragment>
+            <a class="glav__cta" href="#h-prodazha">
+              Получить доступ за {rubli(CENA_AKTSIYA)}
+              <span class="glav__strelka" aria-hidden="true">→</span>
+            </a>
+            <p class="glav__melko">
+              Стартовая скидка до {SROK_SLOVAMI} · потом {rubli(CENA_POSLE)}
+            </p>
+          </Fragment>
+        )}
       </div>
 
       <div data-posle hidden={idyot}>
@@ -404,20 +410,26 @@ const VOPROSY = [
         </div>
 
         <div class="prodazha__act" data-aktsiya hidden={!idyot}>
-          <a
-            class="prodazha__kupit"
-            href={SSYLKA_OPLATY}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Получить доступ за {rubli(CENA_AKTSIYA)}
-            <span class="prodazha__strelka" aria-hidden="true">→</span>
-          </a>
+          {PAUZA_PRODAZH ? (
+            <p class="pauza pauza--temno">{PAUZA_TEKST}</p>
+          ) : (
+            <a
+              class="prodazha__kupit"
+              href={SSYLKA_OPLATY}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Получить доступ за {rubli(CENA_AKTSIYA)}
+              <span class="prodazha__strelka" aria-hidden="true">→</span>
+            </a>
+          )}
           {/* Условия одной строкой. Отдельного абзаца «490 ₽ за 12 месяцев
               доступа с момента оплаты, разовый платёж, без автопродления»
               тут больше нет: он повторял эту же строку и подробный ответ в
               «Коротких ответах» ниже. */}
-          <p class="prodazha__melko">Один платёж · 12 месяцев доступа · Без автопродления</p>
+          {!PAUZA_PRODAZH && (
+            <p class="prodazha__melko">Один платёж · 12 месяцев доступа · Без автопродления</p>
+          )}
         </div>
 
         {/*
